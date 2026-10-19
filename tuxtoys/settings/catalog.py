@@ -17,6 +17,12 @@ class Tool:
     category: str
     # A symbolic icon from the theme, which the sidebar colours to match.
     icon: str
+    # The page it opens, when tools share one, as the mouse tools do; else its own.
+    page: str = ""
+
+    @property
+    def page_id(self) -> str:
+        return self.page or self.id
 
 
 TOOLS = (
@@ -33,6 +39,7 @@ TOOLS = (
     Tool("screenruler", "Screen Ruler", "screen", f"{APP_ID}-screenruler-symbolic"),
     Tool("textextractor", "Text Extractor", "screen", f"{APP_ID}-textextractor-symbolic"),
     Tool("shortcutguide", "Shortcut Guide", "screen", "input-keyboard-symbolic"),
+    Tool("findmymouse", "Find My Mouse", "input", "find-location-symbolic", "mouseutilities"),
 )
 
 
@@ -48,6 +55,9 @@ def headings() -> dict[str, str]:
         # TRANSLATORS: a heading in the settings window's sidebar, over the tools that work
         # on what is on the screen, such as Color Picker.
         "screen": _("Screen"),
+        # TRANSLATORS: a heading in the settings window's sidebar, over the tools for the
+        # mouse and the keyboard, such as Find My Mouse.
+        "input": _("Input"),
         # TRANSLATORS: a heading in the settings window's sidebar, over the tools for files,
         # such as File Locksmith.
         "files": _("Files"),

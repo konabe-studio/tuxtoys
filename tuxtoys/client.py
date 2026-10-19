@@ -18,6 +18,9 @@ from tuxtoys.api import (
     LIGHTSWITCH_INTERFACE,
     LIGHTSWITCH_PATH,
     MODULE_SETTINGS,
+    MOUSE_BUS_NAME,
+    MOUSE_INTERFACE,
+    MOUSE_PATH,
     ModuleInfo,
     ModuleOff,
     NotRunning,
@@ -104,6 +107,10 @@ class Client:
     def lightswitch_toggle(self) -> None:
         self._call(LIGHTSWITCH_PATH, LIGHTSWITCH_INTERFACE, "Toggle", None, None)
 
+    def find_mouse(self) -> None:
+        """Find My Mouse's spotlight on, or off again, through the mouse tools' helper."""
+        self._call(MOUSE_PATH, MOUSE_INTERFACE, "FindMouse", None, None, MOUSE_BUS_NAME)
+
     def _call(
         self,
         path: str,
@@ -111,10 +118,11 @@ class Client:
         method: str,
         arguments: GLib.Variant | None,
         reply: str | None,
+        name: str = BUS_NAME,
     ) -> tuple:
         try:
             result = self._bus.call_sync(
-                BUS_NAME,
+                name,
                 path,
                 interface,
                 method,

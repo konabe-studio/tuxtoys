@@ -3382,3 +3382,157 @@ msgstr ""
 #: tuxtoys/settings/sheet_editor.py
 msgid "No open windows found"
 msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "A keyboard shortcut"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Activation method"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Animation duration (ms)"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Animations are off in Cinnamon's settings, so the spotlight appears at once."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Background color"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Cinnamon's own pointer locator also answers the left Ctrl: one press shows where the pointer is."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Effects settings"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Feral GameMode, which Steam and Lutris can start for a game, if it is installed."
+msgstr ""
+
+#: tuxtoys/cli.py tuxtoys/client.py tuxtoys/inputwatch/detect.py tuxtoys/modules/findmymouse/__init__.py tuxtoys/modules/findmymouse/module.py tuxtoys/modules/findmymouse/options.py tuxtoys/modules/findmymouse/sonar.py tuxtoys/mouseutilities/main.py tuxtoys/mouseutilities/spotlight.py tuxtoys/settings/catalog.py tuxtoys/settings/mouseutilities_page.py
+msgid "Find My Mouse"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Find My Mouse does not start over these. One on each line, by the name X11 knows it by (its WM_CLASS), for example firefox."
+msgstr ""
+
+#: tuxtoys/cli.py
+msgid "Find My Mouse is switched off in TuxToys."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "How far the pointer has to travel to count as a shake. Less is more sensitive."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "How long a stretch of movement is looked at. Shorter catches quicker shakes."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "How long it takes the spotlight to fade in and close in."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "How many times larger the circle starts, closing in."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "How many times the size of the area it moved in the pointer has to travel. Less is more sensitive."
+msgstr ""
+
+#. TRANSLATORS: a heading in the settings window's sidebar, over the tools for the mouse and the keyboard, such as Find My Mouse.
+#: tuxtoys/settings/catalog.py
+msgid "Input"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Minimum shake distance"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Mouse settings"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Not over a full-screen window"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Not while GameMode runs a game"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Press the left Ctrl twice"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Press the right Ctrl twice"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Shake detection interval (ms)"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Shake sensitivity factor (percent)"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Shake the mouse"
+msgstr ""
+
+#: tuxtoys/cli.py
+msgid "Shine Find My Mouse's spotlight on the pointer, or put it away when it is showing."
+msgstr ""
+
+#: tuxtoys/modules/findmymouse/module.py
+msgid "Shines a spotlight on the pointer when you press the left Ctrl twice."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Shines a spotlight on the pointer. A click or a key puts it away, and so does a second of stillness once the pointer has moved."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Spotlight color"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Spotlight initial zoom"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Spotlight radius (px)"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Such as a game, a video or a presentation."
+msgstr ""
+
+#: tuxtoys/cli.py
+msgid "Switch it on with: tuxtoys modules enable findmymouse"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "The size of the circle of light."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Use Find My Mouse"
+msgstr ""
+
+#: tuxtoys/cli.py
+msgid "shine a spotlight on the pointer"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+#, python-brace-format
+msgid "{keys} is in use already. Give Find My Mouse other keys in the Keyboard settings."
+msgstr ""

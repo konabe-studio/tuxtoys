@@ -12,6 +12,7 @@
     tuxtoys screenruler
     tuxtoys textextractor
     tuxtoys shortcutguide
+    tuxtoys findmymouse
     tuxtoys modules [list | enable MODULE | disable MODULE]
 
 Exit status: 0 when done, 1 when TuxToys could not do it, 2 when the command line is wrong.
@@ -42,6 +43,7 @@ class Client(Protocol):
     def awake_toggle(self) -> None: ...
     def lightswitch_state(self) -> dict: ...
     def lightswitch_toggle(self) -> None: ...
+    def find_mouse(self) -> None: ...
 
 
 def main(
@@ -65,6 +67,8 @@ def main(
             run_awake(client, args, now(), out)
         elif args.command == "lightswitch":
             run_lightswitch(client, args, out)
+        elif args.command == "findmymouse":
+            run_findmymouse(client)
         elif args.command in (
             "hosts",
             "env",
@@ -101,6 +105,9 @@ def main(
         elif args.command == "textextractor":
             print(_("Text Extractor is switched off in TuxToys."), file=err)
             print(_("Switch it on with: tuxtoys modules enable textextractor"), file=err)
+        elif args.command == "findmymouse":
+            print(_("Find My Mouse is switched off in TuxToys."), file=err)
+            print(_("Switch it on with: tuxtoys modules enable findmymouse"), file=err)
         elif args.command == "shortcutguide":
             print(_("Shortcut Guide is switched off in TuxToys."), file=err)
             print(_("Switch it on with: tuxtoys modules enable shortcutguide"), file=err)
@@ -137,6 +144,15 @@ def run_lightswitch(client: Client, args: argparse.Namespace, out: TextIO) -> No
     if args.action == "toggle":
         client.lightswitch_toggle()
     print(lightswitch_text.describe(client.lightswitch_state()), file=out)
+
+
+def run_findmymouse(client: Client) -> None:
+    """Shines Find My Mouse's spotlight on the pointer, or puts it away, as its shortcut
+    does, while Find My Mouse is switched on.
+    """
+    if not any(info.id == "findmymouse" and info.state == "on" for info in client.modules()):
+        raise ModuleOff
+    client.find_mouse()
 
 
 def run_window(client: Client, command: str, spawn: Callable[[list[str]], None]) -> None:
@@ -312,6 +328,13 @@ def parser() -> argparse.ArgumentParser:
         description=_(
             "Show Cinnamon's keyboard shortcuts, TuxToys' and the active app's,"
             " or put them away when they are showing."
+        ),
+    )
+    commands.add_parser(
+        "findmymouse",
+        help=_("shine a spotlight on the pointer"),
+        description=_(
+            "Shine Find My Mouse's spotlight on the pointer, or put it away when it is showing."
         ),
     )
     commands.add_parser(

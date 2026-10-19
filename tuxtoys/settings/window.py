@@ -33,6 +33,7 @@ from tuxtoys.settings.general_page import GeneralPage, TrayProcess  # noqa: E402
 from tuxtoys.settings.hosts_page import HostsPage  # noqa: E402
 from tuxtoys.settings.imageresizer_page import ImageResizerPage  # noqa: E402
 from tuxtoys.settings.lightswitch_page import Client, LightSwitchPage  # noqa: E402
+from tuxtoys.settings.mouseutilities_page import MouseUtilitiesPage  # noqa: E402
 from tuxtoys.settings.newplus_page import NewPlusPage  # noqa: E402
 from tuxtoys.settings.overview_page import OverviewPage  # noqa: E402
 from tuxtoys.settings.renameplus_page import RenamePlusPage  # noqa: E402
@@ -46,11 +47,14 @@ SIDEBAR_WIDTH = 200
 
 
 class PageRow(Gtk.ListBoxRow):
-    """A page in the sidebar: an icon and a name, and the heading it sits under."""
+    """A page in the sidebar: an icon and a name, and the heading it sits under. `stack` is
+    the page it shows, when tools share one: the row's own part of it is scrolled to.
+    """
 
-    def __init__(self, page: str, name: str, icon: str, heading: str) -> None:
+    def __init__(self, page: str, name: str, icon: str, heading: str, stack: str = "") -> None:
         super().__init__()
         self.page = page
+        self.stack = stack or page
         self.heading = heading
         box = Gtk.Box(spacing=8, margin_start=10, margin_end=10, margin_top=6, margin_bottom=6)
         box.pack_start(Gtk.Image.new_from_icon_name(icon, Gtk.IconSize.MENU), False, False, 0)
@@ -125,6 +129,7 @@ class SettingsWindow(Gtk.ApplicationWindow):
         self.screenruler = ScreenRulerPage(client, self._error)
         self.textextractor = TextExtractorPage(client, self._error)
         self.shortcutguide = ShortcutGuidePage(client, self._error)
+        self.mouseutilities = MouseUtilitiesPage(client, self._error)
         self.pages = {
             "awake": self.awake,
             "lightswitch": self.lightswitch,
@@ -139,11 +144,12 @@ class SettingsWindow(Gtk.ApplicationWindow):
             "screenruler": self.screenruler,
             "textextractor": self.textextractor,
             "shortcutguide": self.shortcutguide,
+            "findmymouse": self.mouseutilities,
         }
         pages = self.pages
         for heading, tools in catalog.grouped():
             for tool in tools:
-                self._add_page(tool.id, tool.name, tool.icon, heading, pages[tool.id])
+                self._add_page(tool.id, tool.name, tool.icon, heading, pages[tool.id], tool.page_id)
         self.sidebar.select_row(self.sidebar.get_row_at_index(0))
 
         sidebar_scroller = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER)
@@ -205,7 +211,8 @@ class SettingsWindow(Gtk.ApplicationWindow):
     def refresh(self) -> None:
         self.overview.refresh()
         self.general.refresh()
-        for page in self.pages.values():
+        # A page tools share is refreshed once.
+        for page in {id(page): page for page in self.pages.values()}.values():
             page.refresh()
 
     def _on_settings_changed(self, module_id: str, settings: dict) -> None:
@@ -218,7 +225,23 @@ class SettingsWindow(Gtk.ApplicationWindow):
             if row.page == page:
                 self.sidebar.select_row(row)
 
-    def _add_page(self, page: str, name: str, icon: str, heading: str, widget: Gtk.Widget) -> None:
+    def _add_page(
+        self,
+        page: str,
+        name: str,
+        icon: str,
+        heading: str,
+        widget: Gtk.Widget,
+        stack: str = "",
+    ) -> None:
+        stack = stack or page
+        if self.stack.get_child_by_name(stack) is None:
+            self._add_to_stack(stack, widget)
+        row = PageRow(page, name, icon, heading, stack)
+        row.show_all()
+        self.sidebar.add(row)
+
+    def _add_to_stack(self, stack: str, widget: Gtk.Widget) -> None:
         # Scrolls rather than grows when a translation makes the page longer.
         scroller = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER)
         scroller.add(widget)
@@ -228,10 +251,7 @@ class SettingsWindow(Gtk.ApplicationWindow):
         # Shown before they are added: a GtkListBox gives no header to a hidden row, and a
         # GtkStack does not switch to a hidden page.
         scroller.show_all()
-        self.stack.add_named(scroller, page)
-        row = PageRow(page, name, icon, heading)
-        row.show_all()
-        self.sidebar.add(row)
+        self.stack.add_named(scroller, stack)
 
     def _header(self, row: PageRow, before: PageRow | None) -> None:
         if row.heading and (before is None or before.heading != row.heading):
@@ -242,8 +262,13 @@ class SettingsWindow(Gtk.ApplicationWindow):
             row.set_header(None)
 
     def _on_row_selected(self, _sidebar: Gtk.ListBox, row: PageRow | None) -> None:
-        if row is not None:
-            self.stack.set_visible_child_name(row.page)
+        if row is None:
+            return
+        self.stack.set_visible_child_name(row.stack)
+        if row.stack != row.page:
+            page = self.pages.get(row.page)
+            if page is not None and hasattr(page, "scroll_to"):
+                page.scroll_to(row.page)
 
     def _on_key(self, _window: Gtk.Window, event: Gdk.EventKey) -> bool:
         if event.keyval == Gdk.KEY_Escape:

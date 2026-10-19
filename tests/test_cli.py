@@ -65,6 +65,10 @@ class FakeClient:
         self._check()
         return self.lightswitch
 
+    def find_mouse(self) -> None:
+        self._check()
+        self.calls.append(("find_mouse",))
+
     def lightswitch_toggle(self) -> None:
         self._check()
         self.calls.append(("lightswitch_toggle",))
@@ -392,3 +396,19 @@ class TestShortcutGuide:
         assert status == 1
         assert "Shortcut Guide is switched off in TuxToys." in err
         assert "tuxtoys modules enable shortcutguide" in err
+
+
+class TestFindMyMouse:
+    def test_shines_the_spotlight_while_it_is_on(self, client: FakeClient) -> None:
+        client.infos = [AWAKE, ModuleInfo("findmymouse", "Find My Mouse", "", "on", "")]
+        status, _out, _err = run(client, "findmymouse")
+        assert status == 0
+        assert client.calls == [("find_mouse",)]
+
+    def test_says_how_to_switch_it_on(self, client: FakeClient) -> None:
+        client.infos = [AWAKE]
+        status, _out, err = run(client, "findmymouse")
+        assert status == 1
+        assert "Find My Mouse is switched off in TuxToys." in err
+        assert "tuxtoys modules enable findmymouse" in err
+        assert client.calls == []
