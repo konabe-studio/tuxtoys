@@ -27,6 +27,7 @@ from tuxtoys.modules.imageresizer.options import Options as ResizerOptions  # no
 from tuxtoys.modules.imageresizer.options import Size as ResizerSize  # noqa: E402
 from tuxtoys.modules.renameplus.options import Options as RenameOptions  # noqa: E402
 from tuxtoys.modules.screenruler.options import Options as RulerOptions  # noqa: E402
+from tuxtoys.modules.shortcutguide import usersheets  # noqa: E402
 from tuxtoys.modules.shortcutguide.options import Options as GuideOptions  # noqa: E402
 from tuxtoys.modules.textextractor import tesseract  # noqa: E402
 from tuxtoys.modules.textextractor.options import Options as ExtractorOptions  # noqa: E402
@@ -42,6 +43,7 @@ from tuxtoys.settings.newplus_page import NewPlusPage  # noqa: E402
 from tuxtoys.settings.overview_page import OverviewPage  # noqa: E402
 from tuxtoys.settings.renameplus_page import RenamePlusPage  # noqa: E402
 from tuxtoys.settings.screenruler_page import ScreenRulerPage  # noqa: E402
+from tuxtoys.settings.sheet_editor import SheetEditor  # noqa: E402
 from tuxtoys.settings.shortcutguide_page import ShortcutGuidePage  # noqa: E402
 from tuxtoys.settings.textextractor_page import TextExtractorPage  # noqa: E402
 from tuxtoys.settings.window import SettingsWindow  # noqa: E402
@@ -997,10 +999,14 @@ def test_textextractor_page(client: FakeClient) -> None:
     assert len(opened) == 1
 
 
-def test_shortcutguide_page(client: FakeClient) -> None:
+def test_shortcutguide_page(client: FakeClient, tmp_path: Path) -> None:
     opened: list[object] = []
     page = ShortcutGuidePage(
-        client, lambda message: None, opened.append, FakeShortcut("<Shift><Super>slash")
+        client,
+        lambda message: None,
+        opened.append,
+        FakeShortcut("<Shift><Super>slash"),
+        sheets_folder=tmp_path,
     )
     assert page.keys.get_text() == "Shift+Super+/"
     assert page.position.content_widget.get_active_id() == "left"
@@ -1013,6 +1019,87 @@ def test_shortcutguide_page(client: FakeClient) -> None:
     assert client.guide_calls[-1] == {"excluded": "gimp"}
     page._opener(lambda message: None)
     assert len(opened) == 1
+
+
+GIMP_SHEET = """{
+  "version": 1, "name": "GIMP", "icon": "gimp", "windows": ["gimp"],
+  "groups": [{"title": "Layers", "items": [
+    {"id": "1", "label": "New layer", "keys": ["<Primary><Shift>n", "<Super>n"]}]}]
+}"""
+
+
+def guide_page(client: FakeClient, folder: Path, trashed: list[Path]) -> ShortcutGuidePage:
+    return ShortcutGuidePage(
+        client,
+        lambda message: None,
+        lambda show_error: None,
+        FakeShortcut("<Shift><Super>slash"),
+        sheets_folder=folder,
+        to_trash=trashed.append,
+    )
+
+
+def test_shortcutguide_page_lists_the_users_lists_and_the_bad_files(
+    client: FakeClient, tmp_path: Path
+) -> None:
+    (tmp_path / "gimp.json").write_text(GIMP_SHEET, encoding="utf-8")
+    (tmp_path / "broken.json").write_text("{", encoding="utf-8")
+    trashed: list[Path] = []
+    page = guide_page(client, tmp_path, trashed)
+    rows = page.sheets_list.get_children()
+    assert [type(row).__name__ for row in rows] == ["SheetRow", "ProblemRow"]
+    page.trash_sheet(page._sheets[0])
+    assert trashed == [tmp_path / "gimp.json"]
+
+
+def test_shortcutguide_page_saves_a_new_list_in_a_file_of_its_own(
+    client: FakeClient, tmp_path: Path
+) -> None:
+    (tmp_path / "gimp.json").write_text(GIMP_SHEET, encoding="utf-8")
+    page = guide_page(client, tmp_path, [])
+    edited = usersheets.parse(GIMP_SHEET, "")
+    page.save_sheet(None, edited)
+    assert sorted(entry.name for entry in tmp_path.iterdir()) == ["gimp-2.json", "gimp.json"]
+    page.save_sheet(page._sheets[0], usersheets.parse(GIMP_SHEET.replace("GIMP", "Gimp"), ""))
+    assert usersheets.load(tmp_path)[0][0].name == "Gimp"
+    assert len(page.sheets_list.get_children()) == 2
+
+
+def test_the_sheet_editor_keeps_what_it_does_not_show() -> None:
+    sheet = usersheets.parse(GIMP_SHEET, "user:gimp")
+    editor = SheetEditor(None, sheet, lambda: [])
+    assert editor.sheet() == sheet
+    assert editor.problem_text() == ""
+    editor.destroy()
+
+
+def test_the_sheet_editor_adds_shortcuts_that_need_their_keys() -> None:
+    editor = SheetEditor(None, None, lambda: [("gnome-calculator", "Calculator", "")])
+    assert editor.problem_text() == "Give the list a name."
+    editor.pick_window("gnome-calculator", "Calculator", "accessories-calculator")
+    assert editor.name.get_text() == "Calculator"
+    assert editor.classes.get_text() == "gnome-calculator"
+    assert editor.problem_text() == ""
+    editor.add_item()
+    assert "keys" in editor.problem_text()
+    group = editor.store.get_iter_first()
+    item = editor.store.iter_children(group)
+    editor._on_keys_edited(
+        None, str(editor.store.get_path(item)), Gdk.KEY_s, Gdk.ModifierType.CONTROL_MASK, 0
+    )
+    assert editor.problem_text() == ""
+    sheet = editor.sheet()
+    assert sheet.icons[0] == "accessories-calculator"
+    (made,) = sheet.groups
+    assert made.items[0].id == "1"
+    assert made.items[0].keys == ("<Primary>s",)
+    editor.add_item()
+    editor.remove_selected()
+    assert len(editor.sheet().groups[0].items) == 1
+    editor.add_group()
+    editor.move_selected(-1)
+    assert editor.sheet().groups[0].items == ()
+    editor.destroy()
 
 
 def test_textextractor_page_without_tesseract(client: FakeClient) -> None:

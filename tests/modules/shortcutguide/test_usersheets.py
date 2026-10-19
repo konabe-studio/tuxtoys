@@ -200,3 +200,26 @@ def test_more_sheets_for_one_app_join_the_first_in_file_order() -> None:
 
 def test_the_module_knows_its_prefix() -> None:
     assert usersheets.sheet_id(Path("/x/gimp.json")) == "user:gimp"
+
+
+def test_window_classes_are_typed_with_commas() -> None:
+    assert usersheets.parse_classes(" Firefox, firefox-esr;firefox ") == ("firefox", "firefox-esr")
+    assert usersheets.parse_classes("") == ()
+    assert usersheets.classes_text(("firefox", "firefox-esr")) == "firefox, firefox-esr"
+
+
+def test_a_new_shortcut_gets_the_lowest_free_number() -> None:
+    assert usersheets.next_id([]) == "1"
+    assert usersheets.next_id(["1", "3", "new-layer"]) == "2"
+
+
+def test_the_open_windows_come_once_each_by_name() -> None:
+    windows = [("Gnome-calculator", "Calculator"), ("Nemo", ""), ("gnome-calculator", "X")]
+    assert usersheets.window_choices(windows) == [
+        ("gnome-calculator", "Calculator"),
+        ("nemo", "Nemo"),
+    ]
+
+
+def test_a_sheet_knows_its_file(tmp_path: Path) -> None:
+    assert usersheets.path_of(parse(text(GIMP), "user:gimp"), tmp_path) == tmp_path / "gimp.json"

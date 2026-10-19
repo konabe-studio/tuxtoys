@@ -2,6 +2,8 @@ tuxtoys (0.5.0~dev) UNRELEASED; urgency=medium
 
   * Shortcut Guide shows your own lists of shortcuts, a file per app in
     ~/.config/tuxtoys/shortcutguide/, after the app's own when it has one.
+    Its settings page adds and edits them: pick one of the open windows, then
+    press each shortcut's keys.
 
  -- Kōnabe Studio <konabe@proton.me>  Mon, 19 Oct 2026 10:00:00 +0200
 
