@@ -5,7 +5,7 @@ the window manager's EWMH hints; and a window's opacity, through python3-xlib, a
 _NET_WM_WINDOW_OPACITY hint Muffin draws windows with.
 
 And a picture of the whole screen, for the screen tools, through GDK, and which application
-the active window belongs to, for Shortcut Guide.
+the active window belongs to, and which ones are open, for Shortcut Guide.
 """
 
 from collections.abc import Callable, Iterable
@@ -130,3 +130,23 @@ def capture_screen() -> Any:  # noqa: ANN401, a GdkPixbuf.Pixbuf or None
     if root is None:
         return None
     return Gdk.pixbuf_get_from_window(root, 0, 0, root.get_width(), root.get_height())
+
+
+def open_window_classes() -> list[str]:
+    """The class part of WM_CLASS of every window the taskbar shows, "Gnome-calculator" for
+    the Calculator, through libwnck as Always on Top reads windows.
+    """
+    import gi
+
+    gi.require_version("Wnck", "3.0")
+    from gi.repository import Wnck
+
+    screen = Wnck.Screen.get_default()
+    if screen is None:
+        return []
+    screen.force_update()
+    return [
+        window.get_class_group_name() or ""
+        for window in screen.get_windows()
+        if not window.is_skip_tasklist()
+    ]

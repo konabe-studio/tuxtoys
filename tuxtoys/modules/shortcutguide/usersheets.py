@@ -152,6 +152,11 @@ def sheet_id(path: Path) -> str:
     return PREFIX + path.stem
 
 
+def path_of(sheet: Sheet, directory: Path) -> Path:
+    """The file a user sheet was read from, in that folder."""
+    return directory / (sheet.id.removeprefix(PREFIX) + SUFFIX)
+
+
 def load(directory: Path) -> tuple[list[Sheet], list[Problem]]:
     """Every sheet in the folder, in the order of their file names, and the files that
     could not be read. A missing folder has none.
@@ -233,3 +238,42 @@ def for_window(wm_class: str, shipped: Sequence[Sheet], own: Sequence[Sheet]) ->
         return base
     added = tuple(group for sheet in extra for group in _added(sheet))
     return replace(base, groups=(*base.groups, *added))
+
+
+_SEPARATORS = re.compile(r"[\s,;]+")
+
+
+def parse_classes(text: str) -> tuple[str, ...]:
+    """Window classes as the editor takes them, "firefox, firefox-esr": lower-cased, each
+    once, in the order written.
+    """
+    found: dict[str, None] = {}
+    for name in _SEPARATORS.split(text.lower()):
+        if name:
+            found[name] = None
+    return tuple(found)
+
+
+def classes_text(classes: Iterable[str]) -> str:
+    return ", ".join(classes)
+
+
+def next_id(taken: Iterable[str]) -> str:
+    """An id for a new shortcut in a sheet: the lowest number none of the others has."""
+    ids = set(taken)
+    number = 1
+    while str(number) in ids:
+        number += 1
+    return str(number)
+
+
+def window_choices(windows: Iterable[tuple[str, str]]) -> list[tuple[str, str]]:
+    """The open windows the editor offers, as (class, name): each class once, lower-cased,
+    by name, the window's class standing in for a missing name.
+    """
+    found: dict[str, str] = {}
+    for wm_class, name in windows:
+        key = wm_class.strip().lower()
+        if key and key not in found:
+            found[key] = name.strip() or wm_class.strip()
+    return sorted(found.items(), key=lambda choice: (choice[1].casefold(), choice[0]))

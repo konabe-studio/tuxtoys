@@ -1,21 +1,24 @@
 """Shortcut Guide's page, as PowerToys has it: whether it is on, its keyboard shortcut, where
-the window opens, and the apps it does not open over. The settings go through the daemon;
-the shortcut's keys are read from Cinnamon, where the user may have changed them.
+the window opens, and the apps it does not open over; and the user's own lists, to add,
+edit and remove. The settings go through the daemon; the shortcut's keys are read from
+Cinnamon, where the user may have changed them; the lists are files of their own.
 """
 
 from collections.abc import Callable, Mapping
 from contextlib import suppress
+from pathlib import Path
 
 import gi
 
 gi.require_version("Gtk", "3.0")
 
 from gi.repository import Gio, GLib, Gtk  # noqa: E402
-from xapp.SettingsWidgets import Button, ComboBox, Switch, Text  # noqa: E402
+from xapp.SettingsWidgets import Button, ComboBox, SettingsWidget, Switch, Text  # noqa: E402
 
 from tuxtoys.api import ModuleOff, NotRunning, Refused  # noqa: E402
 from tuxtoys.core.i18n import _  # noqa: E402
 from tuxtoys.core.shortcut import CustomShortcut  # noqa: E402
+from tuxtoys.modules.shortcutguide import usersheets  # noqa: E402
 from tuxtoys.modules.shortcutguide.module import guide_command  # noqa: E402
 from tuxtoys.modules.shortcutguide.options import (  # noqa: E402
     SHORTCUT_COMMAND,
@@ -23,11 +26,13 @@ from tuxtoys.modules.shortcutguide.options import (  # noqa: E402
     SHORTCUT_NAME,
     Options,
 )
+from tuxtoys.modules.shortcutguide.sheets import Sheet  # noqa: E402
 from tuxtoys.settings.alwaysontop_page import AppsRow  # noqa: E402
 from tuxtoys.settings.awake_page import SAVE_AFTER_MS  # noqa: E402
 from tuxtoys.settings.colorpicker_page import keys_label  # noqa: E402
 from tuxtoys.settings.lightswitch_page import Client  # noqa: E402
 from tuxtoys.settings.screenruler_page import with_detail  # noqa: E402
+from tuxtoys.settings.sheet_editor import SheetEditor, themed_image  # noqa: E402
 from tuxtoys.settings.simple_page import SimplePage  # noqa: E402
 from tuxtoys.settings.widgets import open_keyboard_settings  # noqa: E402
 
@@ -50,6 +55,68 @@ def position_choices() -> list[tuple[str, str]]:
     ]
 
 
+def trash(path: Path) -> None:
+    Gio.File.new_for_path(str(path)).trash(None)
+
+
+def open_folder(path: Path, show_error: Callable[[str], None]) -> None:
+    try:
+        path.mkdir(parents=True, exist_ok=True)
+        Gio.AppInfo.launch_default_for_uri(path.as_uri(), None)
+    except OSError as error:
+        show_error(str(error.strerror or error))
+    except GLib.Error as error:
+        show_error(error.message)
+
+
+class SheetRow(SettingsWidget):
+    """One of the user's lists: its icon, its name and the windows it is for, and Edit and
+    Move to the trash in a menu.
+    """
+
+    def __init__(self, page: "ShortcutGuidePage", sheet: Sheet) -> None:
+        super().__init__()
+        icon = sheet.icons[0] if sheet.icons else ""
+        self.pack_start(themed_image(icon, Gtk.IconSize.DND), False, False, 0)
+        texts = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, valign=Gtk.Align.CENTER)
+        texts.pack_start(Gtk.Label(label=sheet.name, xalign=0), False, False, 0)
+        windows = Gtk.Label(label=usersheets.classes_text(sheet.wm_classes), xalign=0)
+        windows.get_style_context().add_class("dim-label")
+        texts.pack_start(windows, False, False, 0)
+        self.pack_start(texts, True, True, 0)
+        menu = Gtk.Menu()
+        for label, action in (
+            (_("Edit"), lambda: page.edit_sheet(sheet)),
+            (_("Move to the trash"), lambda: page.trash_sheet(sheet)),
+        ):
+            item = Gtk.MenuItem(label=label)
+            item.connect("activate", lambda _item, act=action: act())
+            menu.append(item)
+        menu.show_all()
+        button = Gtk.MenuButton(popup=menu, relief=Gtk.ReliefStyle.NONE, valign=Gtk.Align.CENTER)
+        button.set_image(Gtk.Image.new_from_icon_name("view-more-symbolic", Gtk.IconSize.MENU))
+        button.set_tooltip_text(_("More"))
+        self.pack_end(button, False, False, 0)
+
+
+class ProblemRow(SettingsWidget):
+    """A file in the lists' folder that could not be read, and why, in English as the
+    reader says it.
+    """
+
+    def __init__(self, problem: usersheets.Problem) -> None:
+        super().__init__()
+        warning = Gtk.Image.new_from_icon_name("dialog-warning-symbolic", Gtk.IconSize.MENU)
+        self.pack_start(warning, False, False, 0)
+        texts = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        title = _("{file} could not be read").format(file=problem.path.name)
+        texts.pack_start(Gtk.Label(label=title, xalign=0), False, False, 0)
+        reason = Gtk.Label(label=problem.reason, xalign=0, wrap=True, selectable=True)
+        reason.get_style_context().add_class("dim-label")
+        texts.pack_start(reason, False, False, 0)
+        self.pack_start(texts, True, True, 0)
+
+
 class ShortcutGuidePage(SimplePage):
     def __init__(
         self,
@@ -57,9 +124,14 @@ class ShortcutGuidePage(SimplePage):
         show_error: Callable[[str], None],
         opener: Callable[[Callable[[str], None]], None] = open_guide,
         shortcut: CustomShortcut | None = None,
+        sheets_folder: Path | None = None,
+        to_trash: Callable[[Path], None] = trash,
     ) -> None:
-        """The tests hand in an opener and a shortcut of their own."""
+        """The tests hand in an opener, a shortcut, a folder and a trash of their own."""
         self._opener = opener
+        self._folder = sheets_folder or usersheets.folder()
+        self._trash = to_trash
+        self._sheets: list[Sheet] = []
         self._shortcut = shortcut or CustomShortcut(SHORTCUT_NAME, SHORTCUT_COMMAND, SHORTCUT_KEYS)
         self._loading = False
         self._shown: dict[str, object] = {}
@@ -75,7 +147,8 @@ class ShortcutGuidePage(SimplePage):
             [
                 _(
                     "Press the shortcut to see Cinnamon's keyboard shortcuts, TuxToys' and the"
-                    " active app's, for Nemo, Xed, the Terminal and Firefox. Search them, and"
+                    " active app's, for Nemo, Xed, the Terminal, Firefox and the apps you add"
+                    " below. Search them, and"
                     " click one to pin it to the top. Press the shortcut again, or Escape, to"
                     " put it away."
                 ),
@@ -114,7 +187,26 @@ class ShortcutGuidePage(SimplePage):
         self.excluded = AppsRow()
         self.excluded.content_widget.get_buffer().connect("changed", self._on_excluded)
         self.excluded_section.add_row(self.excluded)
-        self.sections = (self.keys_section, self.look_section, self.excluded_section)
+
+        self.sheets_section = self.add_section(
+            _("Your own lists"),
+            _(
+                "The shortcuts of any app, shown while its window is active. For an app"
+                " Shortcut Guide knows, they follow its own."
+            ),
+        )
+        self.sheets_list = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.sheets_section.add_row(self.sheets_list)
+        self.sheets_section.add_row(Button(_("Add a list"), lambda *_a: self.edit_sheet(None)))
+        self.sheets_section.add_row(
+            Button(_("Open the folder"), lambda *_a: open_folder(self._folder, show_error))
+        )
+        self.sections = (
+            self.keys_section,
+            self.look_section,
+            self.excluded_section,
+            self.sheets_section,
+        )
         self.refresh()
 
     def refresh(self) -> None:
@@ -126,8 +218,57 @@ class ShortcutGuidePage(SimplePage):
             settings = self._client.module_settings("shortcutguide")
         if settings is not None:
             self.show_settings(settings)
+        self.show_sheets()
         for section in self.sections:
             section.set_sensitive(self._shown_enabled is True)
+
+    def show_sheets(self) -> None:
+        """The lists in the folder as they are now, and the files that are not lists."""
+        self._sheets, problems = usersheets.load(self._folder)
+        for child in self.sheets_list.get_children():
+            child.destroy()
+        for sheet in self._sheets:
+            self.sheets_list.pack_start(SheetRow(self, sheet), False, False, 0)
+        for problem in problems:
+            self.sheets_list.pack_start(ProblemRow(problem), False, False, 0)
+        self.sheets_list.show_all()
+
+    def edit_sheet(self, sheet: Sheet | None) -> None:
+        """Opens the editor on a list, or on a new one, and saves what it hands back."""
+        parent = self.get_toplevel()
+        editor = SheetEditor(parent if isinstance(parent, Gtk.Window) else None, sheet)
+        try:
+            if editor.run() != Gtk.ResponseType.OK:
+                return
+            edited = editor.sheet()
+        finally:
+            editor.destroy()
+        self.save_sheet(sheet, edited)
+
+    def save_sheet(self, old: Sheet | None, edited: Sheet) -> None:
+        """A list saved in its own file, or a new one in a file named after it."""
+        if old is not None:
+            path = usersheets.path_of(old, self._folder)
+        else:
+            taken = []
+            with suppress(OSError):
+                taken = [entry.name for entry in self._folder.iterdir()]
+            path = self._folder / usersheets.file_name(edited.name, taken)
+        try:
+            usersheets.save(edited, path)
+        except OSError as error:
+            reason = error.strerror or str(error)
+            self._show_error(_("The list could not be saved: {reason}").format(reason=reason))
+        self.show_sheets()
+
+    def trash_sheet(self, sheet: Sheet) -> None:
+        try:
+            self._trash(usersheets.path_of(sheet, self._folder))
+        except OSError as error:
+            self._show_error(str(error.strerror or error))
+        except GLib.Error as error:
+            self._show_error(error.message)
+        self.show_sheets()
 
     def show_settings(self, settings: object) -> None:
         if not isinstance(settings, Mapping):
