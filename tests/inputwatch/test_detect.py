@@ -132,7 +132,7 @@ def test_the_debug_lines_never_name_another_key() -> None:
     assert debug.lines(press(Key.CTRL_LEFT, 1000)) == ["Left Ctrl down"]
     debug.lines(release(Key.CTRL_LEFT, 1030))
     assert debug.lines(press(Key.CTRL_LEFT, 1200)) == [
-        "Left Ctrl down",
+        "Left Ctrl down (200 ms after the last)",
         ">>> Left Ctrl pressed twice",
     ]
 
