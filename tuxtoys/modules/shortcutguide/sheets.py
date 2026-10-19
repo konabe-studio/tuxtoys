@@ -15,6 +15,8 @@ class Text:
     msgid: str
     # The gettext domain it is translated in; "" for TuxToys' own.
     domain: str = ""
+    # The user's own words, from a sheet of their own: shown as written, never translated.
+    own: bool = False
 
 
 @dataclass(frozen=True)

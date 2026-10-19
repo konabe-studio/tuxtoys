@@ -188,6 +188,33 @@ loaded by a line it adds to
 .I ~/.xsessionrc
 and
 .IR ~/.bashrc .
+.TP
+.I ~/.config/tuxtoys/shortcutguide/*.json
+The user's own lists for Shortcut Guide, one file per app, read each time it opens:
+.RS
+.EX
+{
+  "version": 1,
+  "name": "GIMP",
+  "icon": "gimp",
+  "windows": ["gimp"],
+  "groups": [
+    {"title": "Layers",
+     "items": [{"id": "new-layer", "label": "New layer",
+                "keys": ["<Primary><Shift>n"]}]}
+  ]
+}
+.EE
+.RE
+.IP
+.I windows
+are the class part of the app's WM_CLASS, as
+.B xprop WM_CLASS
+shows it, and
+.I keys
+are written as Cinnamon's settings write them. A list for an app Shortcut Guide already
+knows adds its groups after the app's own. A file that cannot be read is left out, and
+the reason is logged.
 .SH NOTES
 Removing the package cannot reach into a user's own settings: a keyboard shortcut a tool
 added stays in Cinnamon's custom shortcuts until the tool is switched off first, or the

@@ -32,7 +32,7 @@ def main(argv: list[str] | None = None) -> int:
     from tuxtoys import APP_ID
     from tuxtoys.api import ModuleOff, NotRunning, Refused
     from tuxtoys.client import Client
-    from tuxtoys.modules.shortcutguide import apps, cinnamon, keys
+    from tuxtoys.modules.shortcutguide import apps, cinnamon, keys, usersheets
     from tuxtoys.modules.shortcutguide.options import Options
     from tuxtoys.modules.shortcutguide.placing import panel
     from tuxtoys.modules.shortcutguide.reading import (
@@ -89,7 +89,8 @@ def main(argv: list[str] | None = None) -> int:
         if ours:
             found.append(Tab("tuxtoys", "TuxToys", (APP_ID,), ours))
         first = "cinnamon"
-        sheet = apps.for_window(wm_class)
+        own, _problems = usersheets.load(usersheets.folder())
+        sheet = usersheets.for_window(wm_class, apps.APPS, own)
         if sheet is not None:
             sections = read(sheet, lookup)
             if sections:
