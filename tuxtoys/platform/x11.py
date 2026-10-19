@@ -5,12 +5,15 @@ the window manager's EWMH hints; and a window's opacity, through python3-xlib, a
 _NET_WM_WINDOW_OPACITY hint Muffin draws windows with.
 
 And a picture of the whole screen, for the screen tools, through GDK, and which application
-the active window belongs to, and which ones are open, for Shortcut Guide.
+the active window belongs to, and which ones are open, for Shortcut Guide. And the pointer
+and the modifier keys of the whole session, for the mouse tools, through the RECORD
+extension.
 """
 
 from collections.abc import Callable, Iterable
 from typing import Any
 
+from tuxtoys.inputwatch.detect import ButtonEvent, Event, Key, KeyEvent, Motion
 from tuxtoys.modules.alwaysontop.frame import Rect, step_opacity
 
 type Changed = Callable[[dict[int, Rect], set[int]], None]
@@ -153,3 +156,82 @@ def open_window_classes() -> list[str]:
         for window in screen.get_windows()
         if not window.is_skip_tasklist() and window.get_pid() != os.getpid()
     ]
+
+
+def watch_input(handle: Callable[[Event], None]) -> None:
+    """Hands `handle` every key press and release, pointer motion and mouse button of the
+    session, as the X RECORD extension reports them, until it raises. It only listens:
+    nothing is grabbed, so every other program gets its input as before. A key that is not
+    a modifier is handed on as Key.OTHER at once, without its keycode.
+
+    Raises RuntimeError when the X server has no RECORD extension.
+    """
+    from Xlib import XK, X, display
+    from Xlib.ext import record
+    from Xlib.protocol import rq
+
+    local = display.Display()
+    recorder = display.Display()
+    try:
+        if not recorder.has_extension("RECORD"):
+            raise RuntimeError("the X server has no RECORD extension")
+        names = {
+            XK.XK_Control_L: Key.CTRL_LEFT,
+            XK.XK_Control_R: Key.CTRL_RIGHT,
+            XK.XK_Shift_L: Key.SHIFT,
+            XK.XK_Shift_R: Key.SHIFT,
+            XK.XK_Alt_L: Key.ALT,
+            XK.XK_Alt_R: Key.ALT,
+            XK.XK_Super_L: Key.SUPER,
+            XK.XK_Super_R: Key.SUPER,
+        }
+        modifiers = {
+            keycode: key
+            for keysym, key in names.items()
+            for keycode, _index in local.keysym_to_keycodes(keysym)
+        }
+        context = recorder.record_create_context(
+            0,
+            [record.AllClients],
+            [
+                {
+                    "core_requests": (0, 0),
+                    "core_replies": (0, 0),
+                    "ext_requests": (0, 0, 0, 0),
+                    "ext_replies": (0, 0, 0, 0),
+                    "delivered_events": (0, 0),
+                    "device_events": (X.KeyPress, X.MotionNotify),
+                    "errors": (0, 0),
+                    "client_started": False,
+                    "client_died": False,
+                }
+            ],
+        )
+        field = rq.EventField(None)
+
+        def received(reply: Any) -> None:  # noqa: ANN401, an Xlib record reply
+            if reply.category != record.FromServer or reply.client_swapped:
+                return
+            data = reply.data
+            while len(data) >= 32:
+                event, data = field.parse_binary_value(data, recorder.display, None, None)
+                if event.type in (X.KeyPress, X.KeyRelease):
+                    key = modifiers.get(event.detail, Key.OTHER)
+                    handle(KeyEvent(key, event.type == X.KeyPress, event.time))
+                elif event.type in (X.ButtonPress, X.ButtonRelease):
+                    pressed = event.type == X.ButtonPress
+                    handle(
+                        ButtonEvent(event.detail, pressed, event.root_x, event.root_y, event.time)
+                    )
+                elif event.type == X.MotionNotify:
+                    handle(Motion(event.root_x, event.root_y, event.time))
+
+        try:
+            recorder.record_enable_context(context, received)
+        finally:
+            local.record_disable_context(context)
+            local.flush()
+            recorder.record_free_context(context)
+    finally:
+        local.close()
+        recorder.close()
