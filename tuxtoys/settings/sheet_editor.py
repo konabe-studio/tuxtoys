@@ -206,12 +206,14 @@ class SheetEditor(Gtk.Dialog):
     def sheet(self) -> Sheet:
         """The list as it is in the editor."""
         groups = []
-        for group_row in self.store:
+        for group_iter in self._children(None):
             items = []
-            for row in group_row.iterchildren():
+            for item_iter in self._children(group_iter):
+                row = self.store[item_iter]
                 keys = tuple(keys for keys in (row[KEYS], *row[MORE].split("\n")) if keys)
                 items.append(Item(row[ID], Text(row[LABEL], own=True), keys))
-            groups.append(Group(Text(group_row[LABEL], own=True), tuple(items)))
+            title = self.store[group_iter][LABEL]
+            groups.append(Group(Text(title, own=True), tuple(items)))
         icons = (
             (self._icon, usersheets.FALLBACK_ICON) if self._icon else (usersheets.FALLBACK_ICON,)
         )
@@ -223,14 +225,24 @@ class SheetEditor(Gtk.Dialog):
             usersheets.parse_classes(self.classes.get_text()),
         )
 
+    def _children(self, parent: Gtk.TreeIter | None) -> list[Gtk.TreeIter]:
+        """The shortcuts in a group, or the groups for None, walked by their iters."""
+        found = []
+        child = self.store.iter_children(parent)
+        while child is not None:
+            found.append(child)
+            child = self.store.iter_next(child)
+        return found
+
     def problem_text(self) -> str:
         """Why the list cannot be saved yet, or ""."""
         if not self.name.get_text().strip():
             return _("Give the list a name.")
         if not usersheets.parse_classes(self.classes.get_text()):
             return _("Name the windows it is for.")
-        for group_row in self.store:
-            if any(not row[KEYS] and not row[MORE] for row in group_row.iterchildren()):
+        for group_iter in self._children(None):
+            items = (self.store[item_iter] for item_iter in self._children(group_iter))
+            if any(not row[KEYS] and not row[MORE] for row in items):
                 return _("Press the keys of every shortcut: click its Keys cell first.")
         return ""
 
@@ -323,7 +335,11 @@ class SheetEditor(Gtk.Dialog):
             parent = self.store.iter_nth_child(None, count - 1) if count else None
         if parent is None:
             parent = self.store.append(None, [_("New group"), "", True, "", ""])
-        taken = [row[ID] for group in self.store for row in group.iterchildren()]
+        taken = [
+            self.store[item_iter][ID]
+            for group_iter in self._children(None)
+            for item_iter in self._children(group_iter)
+        ]
         # TRANSLATORS: the name a new shortcut gets in the list editor, which the user
         # then types over.
         values = [_("New shortcut"), "", False, usersheets.next_id(taken), ""]
