@@ -39,11 +39,19 @@ class Debug:
         self.shake = Shake()
         self.pointer = (0, 0)
         self._motion_shown = -MOTION_EVERY_MS
+        self._pressed: dict[Key, int] = {}
 
     def lines(self, event: Event) -> list[str]:
         found = []
         if isinstance(event, KeyEvent):
-            found.append(f"{KEY_NAMES[event.key]} {'down' if event.pressed else 'up'}")
+            line = f"{KEY_NAMES[event.key]} {'down' if event.pressed else 'up'}"
+            if event.pressed and event.key != Key.OTHER:
+                # How long since the last press of the same key, to tune the double press.
+                last = self._pressed.get(event.key)
+                if last is not None:
+                    line += f" ({event.time - last} ms after the last)"
+                self._pressed[event.key] = event.time
+            found.append(line)
             if self.left.feed(event, self.pointer):
                 found.append(">>> Left Ctrl pressed twice")
             if self.right.feed(event, self.pointer):
