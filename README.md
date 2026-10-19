@@ -126,6 +126,9 @@ tools use, and the active app's, for Nemo, Xed, the Terminal and Firefox.
 - **The keys you have:** shortcuts you changed show as you changed them.
 - **Search and pins:** search every list at once, and click a shortcut to pin it to the
   top.
+- **Your own lists:** add the shortcuts of any app in a file of its own in
+  `~/.config/tuxtoys/shortcutguide/`; for an app Shortcut Guide already knows, they follow
+  its own. `man tuxtoys` shows the format.
 - Press the shortcut again, or Escape, to put it away. Apps where it should not open can
   be left out.
 

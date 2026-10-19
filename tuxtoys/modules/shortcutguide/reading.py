@@ -60,7 +60,11 @@ def _catalogue(domain: str) -> gettext.NullTranslations:
 
 
 def translate(text: Text) -> str:
-    """A label in the user's language, from its own domain; English without a catalogue."""
+    """A label in the user's language, from its own domain; English without a catalogue.
+    The user's own labels stay as they wrote them.
+    """
+    if text.own:
+        return text.msgid
     return plain(_catalogue(text.domain).gettext(text.msgid))
 
 
