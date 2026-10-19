@@ -134,8 +134,11 @@ def capture_screen() -> Any:  # noqa: ANN401, a GdkPixbuf.Pixbuf or None
 
 def open_window_classes() -> list[str]:
     """The class part of WM_CLASS of every window the taskbar shows, "Gnome-calculator" for
-    the Calculator, through libwnck as Always on Top reads windows.
+    the Calculator, through libwnck as Always on Top reads windows. This process's own
+    windows are left out.
     """
+    import os
+
     import gi
 
     gi.require_version("Wnck", "3.0")
@@ -148,5 +151,5 @@ def open_window_classes() -> list[str]:
     return [
         window.get_class_group_name() or ""
         for window in screen.get_windows()
-        if not window.is_skip_tasklist()
+        if not window.is_skip_tasklist() and window.get_pid() != os.getpid()
     ]
