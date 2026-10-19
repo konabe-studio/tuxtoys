@@ -16,4 +16,5 @@ AVAILABLE: dict[str, str] = {
     "screenruler": "tuxtoys.modules.screenruler.module:ScreenRuler",
     "textextractor": "tuxtoys.modules.textextractor.module:TextExtractor",
     "shortcutguide": "tuxtoys.modules.shortcutguide.module:ShortcutGuide",
+    "findmymouse": "tuxtoys.modules.findmymouse.module:FindMyMouse",
 }

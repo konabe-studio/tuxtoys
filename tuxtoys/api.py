@@ -38,6 +38,11 @@ LIGHTSWITCH_SETTINGS = {
 }
 ALWAYSONTOP_PATH = f"{OBJECT_PATH}/modules/alwaysontop"
 ALWAYSONTOP_INTERFACE = f"{APP_ID}.AlwaysOnTop"
+# The mouse tools' helper, a process of its own with a name of its own on the session bus,
+# which a tool's shortcut reaches through the tuxtoys command.
+MOUSE_BUS_NAME = f"{APP_ID}.MouseUtilities"
+MOUSE_PATH = f"{OBJECT_PATH}/MouseUtilities"
+MOUSE_INTERFACE = f"{APP_ID}.MouseUtilities"
 ALWAYSONTOP_SETTINGS = {
     "shortcut": "b",
     "opacity_shortcuts": "b",
@@ -126,6 +131,20 @@ SHORTCUTGUIDE_SETTINGS = {
     "excluded": "s",
     "pinned": "as",
 }
+FINDMYMOUSE_SETTINGS = {
+    "activation": "s",
+    "shake_distance": "u",
+    "shake_interval": "u",
+    "shake_factor": "u",
+    "skip_fullscreen": "b",
+    "skip_gamemode": "b",
+    "background": "s",
+    "spotlight": "s",
+    "radius": "u",
+    "zoom": "u",
+    "duration": "u",
+    "excluded": "s",
+}
 # Every module's settings types, by module id, for clients that send settings.
 MODULE_SETTINGS = {
     "awake": AWAKE_SETTINGS,
@@ -140,6 +159,7 @@ MODULE_SETTINGS = {
     "screenruler": SCREENRULER_SETTINGS,
     "textextractor": TEXTEXTRACTOR_SETTINGS,
     "shortcutguide": SHORTCUTGUIDE_SETTINGS,
+    "findmymouse": FINDMYMOUSE_SETTINGS,
 }
 
 

@@ -3546,3 +3546,157 @@ msgstr "Új gyorsbillentyű"
 #: tuxtoys/settings/sheet_editor.py
 msgid "No open windows found"
 msgstr "Nem található nyitott ablak"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "A keyboard shortcut"
+msgstr "Egyéni gyorsbillentyű"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Activation method"
+msgstr "Aktiválási módszer"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Animation duration (ms)"
+msgstr "Animáció időtartama (ms)"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Animations are off in Cinnamon's settings, so the spotlight appears at once."
+msgstr "Az animációk ki vannak kapcsolva a Cinnamon beállításaiban, ezért a kiemelés azonnal megjelenik."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Background color"
+msgstr "Háttérszín"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Cinnamon's own pointer locator also answers the left Ctrl: one press shows where the pointer is."
+msgstr "A Cinnamon saját mutatókeresője is figyeli a bal Ctrl billentyűt: egy lenyomásra megmutatja, hol van a mutató."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Effects settings"
+msgstr "Effektusok beállításai"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Feral GameMode, which Steam and Lutris can start for a game, if it is installed."
+msgstr "A Feral GameMode, amelyet a Steam és a Lutris elindíthat egy játékhoz, ha telepítve van."
+
+#: tuxtoys/cli.py tuxtoys/client.py tuxtoys/inputwatch/detect.py tuxtoys/modules/findmymouse/__init__.py tuxtoys/modules/findmymouse/module.py tuxtoys/modules/findmymouse/options.py tuxtoys/modules/findmymouse/sonar.py tuxtoys/mouseutilities/main.py tuxtoys/mouseutilities/spotlight.py tuxtoys/settings/catalog.py tuxtoys/settings/mouseutilities_page.py
+msgid "Find My Mouse"
+msgstr "Find My Mouse"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Find My Mouse does not start over these. One on each line, by the name X11 knows it by (its WM_CLASS), for example firefox."
+msgstr "Ezek fölött a Find My Mouse nem indul el. Soronként egy, azon a néven, amelyen az X11 ismeri (WM_CLASS), például firefox."
+
+#: tuxtoys/cli.py
+msgid "Find My Mouse is switched off in TuxToys."
+msgstr "A Find My Mouse ki van kapcsolva a TuxToysban."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "How far the pointer has to travel to count as a shake. Less is more sensitive."
+msgstr "Mekkora utat kell megtennie a mutatónak, hogy rázásnak számítson. A kisebb érték érzékenyebb."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "How long a stretch of movement is looked at. Shorter catches quicker shakes."
+msgstr "Milyen hosszú mozgásszakaszt vizsgál. A rövidebb a gyorsabb rázásokat is észleli."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "How long it takes the spotlight to fade in and close in."
+msgstr "Mennyi idő alatt jelenik meg és szűkül össze a kiemelés."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "How many times larger the circle starts, closing in."
+msgstr "Hányszor nagyobb körrel indul, mielőtt összeszűkül."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "How many times the size of the area it moved in the pointer has to travel. Less is more sensitive."
+msgstr "A mutató által bejárt terület méretének hányszorosát kell megtennie. A kisebb érték érzékenyebb."
+
+#. TRANSLATORS: a heading in the settings window's sidebar, over the tools for the mouse and the keyboard, such as Find My Mouse.
+#: tuxtoys/settings/catalog.py
+msgid "Input"
+msgstr "Bevitel"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Minimum shake distance"
+msgstr "Minimális rázástávolság"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Mouse settings"
+msgstr "Egérbeállítások"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Not over a full-screen window"
+msgstr "Ne teljes képernyős ablak fölött"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Not while GameMode runs a game"
+msgstr "Ne, amíg a GameMode játékot futtat"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Press the left Ctrl twice"
+msgstr "A bal Ctrl billentyű kétszeri megnyomása"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Press the right Ctrl twice"
+msgstr "A jobb Ctrl billentyű kétszeri megnyomása"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Shake detection interval (ms)"
+msgstr "Rázásészlelési időköz (ms)"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Shake sensitivity factor (percent)"
+msgstr "Rázásérzékenységi tényező (százalék)"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Shake the mouse"
+msgstr "Egér rázása"
+
+#: tuxtoys/cli.py
+msgid "Shine Find My Mouse's spotlight on the pointer, or put it away when it is showing."
+msgstr "A Find My Mouse kiemelése a mutatón, vagy elrejtése, ha látszik."
+
+#: tuxtoys/modules/findmymouse/module.py
+msgid "Shines a spotlight on the pointer when you press the left Ctrl twice."
+msgstr "Kiemeli a mutatót, ha kétszer megnyomja a bal Ctrl billentyűt."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Shines a spotlight on the pointer. A click or a key puts it away, and so does a second of stillness once the pointer has moved."
+msgstr "Kiemeli a mutatót. Egy kattintás vagy egy billentyű elrejti, és az is, ha a mutató mozgás után egy másodpercig nem mozdul."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Spotlight color"
+msgstr "Kiemelés színe"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Spotlight initial zoom"
+msgstr "Kiemelés kezdeti nagyítása"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Spotlight radius (px)"
+msgstr "Kiemelés sugara (px)"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Such as a game, a video or a presentation."
+msgstr "Például játék, videó vagy bemutató."
+
+#: tuxtoys/cli.py
+msgid "Switch it on with: tuxtoys modules enable findmymouse"
+msgstr "Bekapcsolás: tuxtoys modules enable findmymouse"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "The size of the circle of light."
+msgstr "A fénykör mérete."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Use Find My Mouse"
+msgstr "Find My Mouse használata"
+
+#: tuxtoys/cli.py
+msgid "shine a spotlight on the pointer"
+msgstr "a mutató kiemelése"
+
+#: tuxtoys/settings/mouseutilities_page.py
+#, python-brace-format
+msgid "{keys} is in use already. Give Find My Mouse other keys in the Keyboard settings."
+msgstr "A(z) {keys} már foglalt. Adjon a Find My Mouse-nak más billentyűket a Billentyűzet beállításaiban."

@@ -4,6 +4,11 @@ tuxtoys (0.5.0~dev) UNRELEASED; urgency=medium
     ~/.config/tuxtoys/shortcutguide/, after the app's own when it has one.
     Its settings page adds and edits them: pick one of the open windows, then
     press each shortcut's keys.
+  * Find My Mouse shines a spotlight on the pointer when you press the left
+    Ctrl twice, or the right one, shake the mouse, or press its shortcut,
+    as PowerToys' Find My Mouse does. It watches only the pointer and the
+    modifier keys, through the X RECORD extension, and takes nothing from
+    other programs.
 
  -- Kōnabe Studio <konabe@proton.me>  Mon, 19 Oct 2026 10:00:00 +0200
 

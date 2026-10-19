@@ -133,6 +133,23 @@ tools use, and the active app's, for Nemo, Xed, the Terminal and Firefox.
 - Press the shortcut again, or Escape, to put it away. Apps where it should not open can
   be left out.
 
+### Find My Mouse
+
+Press the left Ctrl twice to see where the pointer is: the screen dims but for a
+spotlight around it, which follows it. A click or a key puts it away, and so does a
+second of stillness once you have moved the mouse.
+
+- **Ways to start it:** the left or the right Ctrl twice, a shake of the mouse, or a
+  keyboard shortcut.
+- **Out of the way:** it does not start over a full-screen window or while Feral
+  GameMode runs a game, nor over apps you leave out.
+- **Its look:** the colors, the size of the spotlight and how it closes in, following
+  Cinnamon's own setting for animations.
+- **What it watches:** the pointer, its buttons and the Ctrl, Shift, Alt and Super
+  keys, only while it is on. Any other key is only known as "a key", never which one,
+  and nothing is kept or sent anywhere. Nothing is taken from other programs either:
+  every key and click still reaches them.
+
 ### File Locksmith
 
 Right-click a file or folder in Nemo and choose **What is using this?** to see which of

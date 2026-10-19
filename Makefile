@@ -68,6 +68,8 @@ install: all
 		> $(DESTDIR)$(LIBEXECDIR)/tuxtoys-save-template
 	$(SUBSTITUTE) data/launchers/tuxtoys-always-on-top.in \
 		> $(DESTDIR)$(LIBEXECDIR)/tuxtoys-always-on-top
+	$(SUBSTITUTE) data/launchers/tuxtoys-mouse-utilities.in \
+		> $(DESTDIR)$(LIBEXECDIR)/tuxtoys-mouse-utilities
 	$(SUBSTITUTE) data/launchers/tuxtoys-new-from-template.in \
 		> $(DESTDIR)$(LIBEXECDIR)/tuxtoys-new-from-template
 	$(SUBSTITUTE) data/launchers/tuxtoys-image-resizer.in \
@@ -94,6 +96,7 @@ install: all
 		$(DESTDIR)$(LIBEXECDIR)/tuxtoysd $(DESTDIR)$(LIBEXECDIR)/tuxtoys-tray \
 		$(DESTDIR)$(LIBEXECDIR)/tuxtoys-locksmith $(DESTDIR)$(LIBEXECDIR)/tuxtoys-save-template \
 		$(DESTDIR)$(LIBEXECDIR)/tuxtoys-always-on-top \
+		$(DESTDIR)$(LIBEXECDIR)/tuxtoys-mouse-utilities \
 		$(DESTDIR)$(LIBEXECDIR)/tuxtoys-new-from-template \
 		$(DESTDIR)$(LIBEXECDIR)/tuxtoys-image-resizer \
 		$(DESTDIR)$(LIBEXECDIR)/tuxtoys-rename \

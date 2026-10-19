@@ -14,7 +14,7 @@ def test_tool_ids_are_unique() -> None:
 
 def test_grouped_keeps_the_order_and_leaves_out_empty_headings() -> None:
     groups = catalog.grouped()
-    assert [heading for heading, _ in groups] == ["System", "Windows", "Screen", "Files"]
+    assert [heading for heading, _ in groups] == ["System", "Windows", "Screen", "Input", "Files"]
     assert [tool.id for _, tools in groups for tool in tools] == [
         "awake",
         "lightswitch",
@@ -25,6 +25,7 @@ def test_grouped_keeps_the_order_and_leaves_out_empty_headings() -> None:
         "screenruler",
         "textextractor",
         "shortcutguide",
+        "findmymouse",
         "locksmith",
         "newplus",
         "imageresizer",
@@ -36,3 +37,9 @@ def test_every_module_the_daemon_has_is_listed() -> None:
     from tuxtoys.modules import AVAILABLE
 
     assert {tool.id for tool in catalog.TOOLS} == set(AVAILABLE)
+
+
+def test_the_mouse_tools_share_one_page() -> None:
+    tool = next(tool for tool in catalog.TOOLS if tool.id == "findmymouse")
+    assert tool.page_id == "mouseutilities"
+    assert next(tool for tool in catalog.TOOLS if tool.id == "awake").page_id == "awake"

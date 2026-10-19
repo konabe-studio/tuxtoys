@@ -123,6 +123,28 @@ def active_window_class() -> str:
         screen.close()
 
 
+def active_window_fullscreen() -> bool:
+    """Whether the active window fills its monitor, as a game or a video does: the
+    _NET_WM_STATE_FULLSCREEN hint the window manager keeps on it.
+    """
+    from Xlib import X, Xatom, display, error
+
+    screen = display.Display()
+    try:
+        root = screen.screen().root
+        active = root.get_full_property(screen.intern_atom("_NET_ACTIVE_WINDOW"), X.AnyPropertyType)
+        if not active or not active.value or not active.value[0]:
+            return False
+        window = screen.create_resource_object("window", active.value[0])
+        try:
+            state = window.get_full_property(screen.intern_atom("_NET_WM_STATE"), Xatom.ATOM)
+        except error.XError:
+            return False
+        return bool(state) and screen.intern_atom("_NET_WM_STATE_FULLSCREEN") in state.value
+    finally:
+        screen.close()
+
+
 def capture_screen() -> Any:  # noqa: ANN401, a GdkPixbuf.Pixbuf or None
     """The whole screen, every monitor, as it is now: the root window's pixels, which an
     X11 session with a compositor lets any client read.

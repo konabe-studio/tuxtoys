@@ -22,6 +22,7 @@ if not Gtk.init_check()[0]:
 
 from tuxtoys.api import ModuleInfo, ModuleOff, NotRunning, Refused  # noqa: E402
 from tuxtoys.modules.colorpicker.options import Options as PickerOptions  # noqa: E402
+from tuxtoys.modules.findmymouse.options import Options as MouseOptions  # noqa: E402
 from tuxtoys.modules.hosts.options import Options as HostsOptions  # noqa: E402
 from tuxtoys.modules.imageresizer.options import Options as ResizerOptions  # noqa: E402
 from tuxtoys.modules.imageresizer.options import Size as ResizerSize  # noqa: E402
@@ -39,6 +40,7 @@ from tuxtoys.settings.general_page import GeneralPage  # noqa: E402
 from tuxtoys.settings.hosts_page import HostsPage  # noqa: E402
 from tuxtoys.settings.imageresizer_page import ImageResizerPage  # noqa: E402
 from tuxtoys.settings.lightswitch_page import LightSwitchPage  # noqa: E402
+from tuxtoys.settings.mouseutilities_page import MouseUtilitiesPage  # noqa: E402
 from tuxtoys.settings.newplus_page import NewPlusPage  # noqa: E402
 from tuxtoys.settings.overview_page import OverviewPage  # noqa: E402
 from tuxtoys.settings.renameplus_page import RenamePlusPage  # noqa: E402
@@ -102,6 +104,8 @@ class FakeClient:
         self.extractor_calls: list[dict] = []
         self.guide_settings = GuideOptions().settings()
         self.guide_calls: list[dict] = []
+        self.mouse_settings = MouseOptions().settings()
+        self.mouse_calls: list[dict] = []
         self.ruler_calls: list[dict] = []
         self.hosts_settings = HostsOptions().settings()
         self.hosts_calls: list[dict] = []
@@ -146,6 +150,7 @@ class FakeClient:
             ModuleInfo("screenruler", "Screen Ruler", "", "on", ""),
             ModuleInfo("textextractor", "Text Extractor", "", "on", ""),
             ModuleInfo("shortcutguide", "Shortcut Guide", "", "on", ""),
+            ModuleInfo("findmymouse", "Find My Mouse", "", "on", ""),
         ]
 
     def set_module_enabled(self, module_id: str, enabled: bool) -> None:
@@ -161,6 +166,8 @@ class FakeClient:
         self.state = "on" if enabled else "off"
 
     def module_settings(self, module_id: str) -> dict:
+        if module_id == "findmymouse":
+            return dict(self.mouse_settings)
         if module_id == "lightswitch":
             return dict(self.light_settings)
         if module_id == "alwaysontop":
@@ -188,6 +195,10 @@ class FakeClient:
     def set_module_settings(self, module_id: str, changes: Mapping[str, object]) -> None:
         if self.fail:
             raise self.fail
+        if module_id == "findmymouse":
+            self.mouse_calls.append(dict(changes))
+            self.mouse_settings = MouseOptions.read(self.mouse_settings).update(changes).settings()
+            return
         if module_id == "lightswitch":
             self.light_calls.append(("settings", dict(changes)))
             self.light_settings.update(changes)
@@ -408,6 +419,7 @@ def test_the_sidebar_starts_with_the_overview_then_the_tools_under_headings(
         "screenruler",
         "textextractor",
         "shortcutguide",
+        "findmymouse",
         "locksmith",
         "newplus",
         "imageresizer",
@@ -421,7 +433,9 @@ def test_the_sidebar_starts_with_the_overview_then_the_tools_under_headings(
     assert rows[5].get_header() is None
     assert rows[6].get_header().get_text() == "Windows"
     assert rows[7].get_header().get_text() == "Screen"
-    assert rows[11].get_header().get_text() == "Files"
+    assert rows[11].get_header().get_text() == "Input"
+    assert rows[12].get_header().get_text() == "Files"
+    assert rows[11].stack == "mouseutilities"
     assert rows[0].get_child().get_children()[-1].get_text() == "Home"
     assert window.stack.get_visible_child_name() == "overview"
 
@@ -1019,6 +1033,53 @@ def test_shortcutguide_page(client: FakeClient, tmp_path: Path) -> None:
     assert client.guide_calls[-1] == {"excluded": "gimp"}
     page._opener(lambda message: None)
     assert len(opened) == 1
+
+
+def mouse_page(client: FakeClient, flags: dict[str, bool] | None = None) -> MouseUtilitiesPage:
+    found = flags or {}
+    return MouseUtilitiesPage(
+        client,
+        lambda message: None,
+        FakeShortcut("<Shift><Super>f"),
+        lambda schema, key, default: found.get(key, default),
+    )
+
+
+def test_find_my_mouse_part_shows_and_saves_its_settings(client: FakeClient) -> None:
+    page = mouse_page(client)
+    assert page.activation.content_widget.get_active_id() == "ctrl-left"
+    assert not any(row.get_visible() for row in page.shake_rows)
+    assert not page.keys_row.get_visible()
+    page.activation.content_widget.set_active_id("shake")
+    assert client.mouse_calls[-1] == {"activation": "shake"}
+    assert all(row.get_visible() for row in page.shake_rows)
+    page.activation.content_widget.set_active_id("shortcut")
+    assert page.keys_row.get_visible()
+    assert page.keys.get_text() == "Shift+Super+F"
+    page.skip_gamemode.content_widget.set_active(False)
+    assert client.mouse_calls[-1] == {"skip_gamemode": False}
+    page.radius.content_widget.set_value(150)
+    page._save_now()
+    assert client.mouse_calls[-1] == {"radius": 150}
+    rgba = Gdk.RGBA()
+    rgba.parse("rgba(255,0,0,0.5)")
+    page.spotlight.content_widget.set_rgba(rgba)
+    page.spotlight.content_widget.emit("color-set")
+    assert client.mouse_calls[-1] == {"spotlight": "#ff000080"}
+
+
+def test_find_my_mouse_part_tells_of_cinnamon_s_own_settings(client: FakeClient) -> None:
+    page = mouse_page(client, {"locate-pointer": True, "enable-animations": False})
+    assert page.locate_notice.get_visible()
+    assert page.animations_notice.get_visible()
+    assert not page.duration.get_sensitive()
+    page.activation.content_widget.set_active_id("ctrl-right")
+    assert not page.locate_notice.get_visible()
+
+
+def test_the_mouse_row_opens_the_shared_page(window: SettingsWindow) -> None:
+    window.show_page("findmymouse")
+    assert window.stack.get_visible_child_name() == "mouseutilities"
 
 
 GIMP_SHEET = """{
