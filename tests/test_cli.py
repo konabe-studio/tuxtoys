@@ -81,6 +81,10 @@ class FakeClient:
         self._check()
         self.calls.append(("glide_cursor",))
 
+    def jump_mouse(self) -> None:
+        self._check()
+        self.calls.append(("jump_mouse",))
+
     def lightswitch_toggle(self) -> None:
         self._check()
         self.calls.append(("lightswitch_toggle",))
@@ -454,3 +458,17 @@ class TestCrosshairs:
         assert status == 1
         assert "Mouse Pointer Crosshairs is switched off in TuxToys." in err
         assert "tuxtoys modules enable crosshairs" in err
+
+
+class TestMouseJump:
+    def test_opens_the_preview_while_it_is_on(self, client: FakeClient) -> None:
+        client.infos = [AWAKE, ModuleInfo("mousejump", "Mouse Jump", "", "on", "")]
+        assert run(client, "mousejump")[0] == 0
+        assert client.calls == [("jump_mouse",)]
+
+    def test_says_how_to_switch_it_on(self, client: FakeClient) -> None:
+        client.infos = [AWAKE]
+        status, _out, err = run(client, "mousejump")
+        assert status == 1
+        assert "Mouse Jump is switched off in TuxToys." in err
+        assert "tuxtoys modules enable mousejump" in err

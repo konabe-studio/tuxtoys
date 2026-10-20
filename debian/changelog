@@ -15,6 +15,8 @@ tuxtoys (0.5.0~dev) UNRELEASED; urgency=medium
   * Mouse Pointer Crosshairs draws crosshairs through the pointer after
     Super+Alt+P, and its gliding cursor places the pointer and clicks with
     Super+Alt+Period alone, as PowerToys' Mouse Pointer Crosshairs does.
+  * Mouse Jump sends the pointer anywhere from a small picture of your
+    screens after Super+Shift+D, as PowerToys' Mouse Jump does.
 
  -- Kōnabe Studio <konabe@proton.me>  Mon, 19 Oct 2026 10:00:00 +0200
 

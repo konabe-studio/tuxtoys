@@ -28,6 +28,7 @@ def test_grouped_keeps_the_order_and_leaves_out_empty_headings() -> None:
         "findmymouse",
         "mousehighlighter",
         "crosshairs",
+        "mousejump",
         "locksmith",
         "newplus",
         "imageresizer",

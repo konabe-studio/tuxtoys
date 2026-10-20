@@ -2,7 +2,8 @@
 pointer and the modifier keys once, hands every event to each tool, and draws what they call
 for, until the daemon stops it. Started by the daemon with a --tool id=settings for each,
 not by hand. Its name on the session bus takes the tools' shortcuts: `tuxtoys findmymouse`,
-`tuxtoys mousehighlighter`, `tuxtoys crosshairs` and `tuxtoys glidingcursor`.
+`tuxtoys mousehighlighter`, `tuxtoys crosshairs`, `tuxtoys glidingcursor` and
+`tuxtoys mousejump`.
 """
 
 import argparse
@@ -15,7 +16,7 @@ from typing import Any
 
 log = logging.getLogger("tuxtoys-mouse-utilities")
 
-TOOLS = ("findmymouse", "mousehighlighter", "crosshairs")
+TOOLS = ("findmymouse", "mousehighlighter", "crosshairs", "mousejump")
 INTERFACE_XML = """
 <node>
   <interface name="{interface}">
@@ -23,6 +24,7 @@ INTERFACE_XML = """
     <method name="ToggleHighlighter"/>
     <method name="ToggleCrosshairs"/>
     <method name="GlideCursor"/>
+    <method name="JumpMouse"/>
     <method name="Configure">
       <arg name="tool" type="s" direction="in"/>
       <arg name="settings" type="s" direction="in"/>
@@ -95,6 +97,11 @@ def main(argv: list[str] | None = None) -> int:
         from tuxtoys.mouseutilities.crosshairs import CrosshairsTool
 
         running["crosshairs"] = CrosshairsTool(CrosshairsOptions.read(tools["crosshairs"]))
+    if "mousejump" in tools:
+        from tuxtoys.modules.mousejump.options import Options as JumpOptions
+        from tuxtoys.mouseutilities.mousejump import MouseJumpTool
+
+        running["mousejump"] = MouseJumpTool(JumpOptions.read(tools["mousejump"]))
 
     def handle(event: Event) -> None:
         """In the watcher's thread: every tool hears every event."""
@@ -120,6 +127,8 @@ def main(argv: list[str] | None = None) -> int:
             running["crosshairs"].toggle()
         elif method == "GlideCursor" and "crosshairs" in running:
             running["crosshairs"].glide()
+        elif method == "JumpMouse" and "mousejump" in running:
+            running["mousejump"].jump()
         invocation.return_value(None)
 
     def configure(tool_id: str, settings: str, invocation: Any) -> None:  # noqa: ANN401
@@ -136,6 +145,10 @@ def main(argv: list[str] | None = None) -> int:
             from tuxtoys.modules.findmymouse.options import Options
 
             running[tool_id].configure(Options.read(found[tool_id]))
+        elif tool_id == "mousejump":
+            from tuxtoys.modules.mousejump.options import Options as JumpOptions
+
+            running[tool_id].configure(JumpOptions.read(found[tool_id]))
         elif tool_id == "crosshairs":
             from tuxtoys.modules.crosshairs.options import Options as CrosshairsOptions
 

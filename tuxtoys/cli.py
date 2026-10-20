@@ -16,6 +16,7 @@
     tuxtoys mousehighlighter
     tuxtoys crosshairs
     tuxtoys glidingcursor
+    tuxtoys mousejump
     tuxtoys modules [list | enable MODULE | disable MODULE]
 
 Exit status: 0 when done, 1 when TuxToys could not do it, 2 when the command line is wrong.
@@ -50,6 +51,7 @@ class Client(Protocol):
     def toggle_highlighter(self) -> None: ...
     def toggle_crosshairs(self) -> None: ...
     def glide_cursor(self) -> None: ...
+    def jump_mouse(self) -> None: ...
 
 
 def main(
@@ -79,6 +81,8 @@ def main(
             run_mousehighlighter(client)
         elif args.command in ("crosshairs", "glidingcursor"):
             run_crosshairs(client, args.command)
+        elif args.command == "mousejump":
+            run_mousejump(client)
         elif args.command in (
             "hosts",
             "env",
@@ -115,6 +119,9 @@ def main(
         elif args.command == "textextractor":
             print(_("Text Extractor is switched off in TuxToys."), file=err)
             print(_("Switch it on with: tuxtoys modules enable textextractor"), file=err)
+        elif args.command == "mousejump":
+            print(_("Mouse Jump is switched off in TuxToys."), file=err)
+            print(_("Switch it on with: tuxtoys modules enable mousejump"), file=err)
         elif args.command in ("crosshairs", "glidingcursor"):
             print(_("Mouse Pointer Crosshairs is switched off in TuxToys."), file=err)
             print(_("Switch it on with: tuxtoys modules enable crosshairs"), file=err)
@@ -190,6 +197,13 @@ def run_crosshairs(client: Client, command: str) -> None:
         client.toggle_crosshairs()
     else:
         client.glide_cursor()
+
+
+def run_mousejump(client: Client) -> None:
+    """Mouse Jump's preview, as its shortcut opens it, while Mouse Jump is switched on."""
+    if not any(info.id == "mousejump" and info.state == "on" for info in client.modules()):
+        raise ModuleOff
+    client.jump_mouse()
 
 
 def run_window(client: Client, command: str, spawn: Callable[[list[str]], None]) -> None:
@@ -391,6 +405,11 @@ def parser() -> argparse.ArgumentParser:
             "The gliding cursor's next step: start a line across the screen, slow it,"
             " turn to a line down the screen, slow it, and click where they cross."
         ),
+    )
+    commands.add_parser(
+        "mousejump",
+        help=_("send the pointer anywhere from a picture of your screens"),
+        description=_("Open Mouse Jump's picture of your screens, or put it away."),
     )
     commands.add_parser(
         "env",

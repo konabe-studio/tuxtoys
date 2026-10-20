@@ -12,6 +12,8 @@ the mode chosen, as PowerToys shows them.
 
 Mouse Pointer Crosshairs' part: its shortcut, whether it starts on, the crosshairs' look,
 and the gliding cursor's shortcut and speeds.
+
+Mouse Jump's part: its shortcut, the largest size of its preview, and the preview's style.
 """
 
 from collections.abc import Callable, Mapping
@@ -38,6 +40,7 @@ from tuxtoys.core.shortcut import CustomShortcut  # noqa: E402
 from tuxtoys.modules.crosshairs import options as crosshairs  # noqa: E402
 from tuxtoys.modules.findmymouse import options as findmymouse  # noqa: E402
 from tuxtoys.modules.mousehighlighter import options as highlighter  # noqa: E402
+from tuxtoys.modules.mousejump import options as mousejump  # noqa: E402
 from tuxtoys.settings.alwaysontop_page import AppsRow, ColorRow, SliderRow  # noqa: E402
 from tuxtoys.settings.awake_page import SAVE_AFTER_MS  # noqa: E402
 from tuxtoys.settings.colorpicker_page import keys_label  # noqa: E402
@@ -95,6 +98,15 @@ def orientations() -> list[tuple[str, str]]:
         ("both", _("Vertical and horizontal lines")),
         ("vertical", _("Vertical only")),
         ("horizontal", _("Horizontal only")),
+    ]
+
+
+def preview_styles() -> list[tuple[str, str]]:
+    return [
+        # TRANSLATORS: Mouse Jump's preview style with no frames between the screens.
+        ("compact", _("Compact")),
+        # TRANSLATORS: Mouse Jump's preview style with a dark frame round each screen.
+        ("bezelled", _("Bezelled")),
     ]
 
 
@@ -774,6 +786,74 @@ class CrosshairsPart(MousePart):
             self._loading = False
 
 
+class MouseJumpPart(MousePart):
+    module_id = "mousejump"
+
+    def __init__(
+        self,
+        page: SettingsPage,
+        client: Client,
+        show_error: Callable[[str], None],
+        shortcut: CustomShortcut,
+    ) -> None:
+        super().__init__(page, client, show_error)
+        self._shortcut = shortcut
+        self.first = self.top(
+            _("Mouse Jump"),
+            _(
+                "Shows a small picture of your screens; a click on it sends the pointer there."
+                " Escape or a click elsewhere puts it away."
+            ),
+            _("Use Mouse Jump"),
+        )
+        self.keys_section = page.add_section(
+            _("Activation"),
+            _("Change its keys in the Keyboard settings, under TuxToys: Mouse Jump."),
+        )
+        self.shortcut = Switch(_("Open it with a keyboard shortcut"))
+        self.shortcut.content_widget.connect("notify::active", self._on_flag, "shortcut")
+        self.keys_section.add_row(self.shortcut)
+        keys = Text("")
+        self.keys = keys.content_widget
+        self.keys_section.add_row(keys)
+        self.keys_section.add_row(
+            Button(_("Open the Keyboard settings"), lambda *_a: open_keyboard_settings(show_error))
+        )
+        self.look_section = page.add_section(
+            _("Thumbnail size"),
+            _("The largest the picture gets; never larger than the screen it opens on."),
+        )
+        self.width = number_row(_("Width (px)"), "", mousejump.WIDTH)
+        self.width.content_widget.connect("value-changed", self._on_number, "width")
+        self.look_section.add_row(self.width)
+        self.height = number_row(_("Height (px)"), "", mousejump.HEIGHT)
+        self.height.content_widget.connect("value-changed", self._on_number, "height")
+        self.look_section.add_row(self.height)
+        self.style = ComboBox(_("Preview style"), preview_styles())
+        self.style.content_widget.connect("changed", self._on_choice, "style")
+        self.look_section.add_row(self.style)
+        self.sections = (self.keys_section, self.look_section)
+
+    def show_settings(self, settings: object) -> None:
+        if not isinstance(settings, Mapping):
+            return
+        options = mousejump.Options.read(settings)
+        self._shown = dict(options.settings())
+        self._loading = True
+        try:
+            self.shortcut.content_widget.set_active(options.shortcut)
+            self.keys.set_text(
+                self._keys_text(self._shortcut, mousejump.SHORTCUT_KEYS, "Mouse Jump")
+                if options.shortcut
+                else ""
+            )
+            self.width.content_widget.set_value(options.width)
+            self.height.content_widget.set_value(options.height)
+            self.style.content_widget.set_active_id(options.style)
+        finally:
+            self._loading = False
+
+
 class MouseUtilitiesPage(SettingsPage):
     def __init__(
         self,
@@ -817,8 +897,18 @@ class MouseUtilitiesPage(SettingsPage):
                 crosshairs.GLIDE_NAME, crosshairs.GLIDE_COMMAND, crosshairs.GLIDE_KEYS
             ),
         )
+        self.mousejump = MouseJumpPart(
+            self,
+            client,
+            show_error,
+            found.get("mousejump")
+            or CustomShortcut(
+                mousejump.SHORTCUT_NAME, mousejump.SHORTCUT_COMMAND, mousejump.SHORTCUT_KEYS
+            ),
+        )
         self.parts: dict[str, MousePart] = {
-            part.module_id: part for part in (self.findmymouse, self.highlighter, self.crosshairs)
+            part.module_id: part
+            for part in (self.findmymouse, self.highlighter, self.crosshairs, self.mousejump)
         }
         self.refresh()
 

@@ -3811,3 +3811,73 @@ msgstr ""
 #: tuxtoys/cli.py
 msgid "show crosshairs through the pointer, or put them away"
 msgstr ""
+
+#. TRANSLATORS: Mouse Jump's preview style with a dark frame round each screen.
+#: tuxtoys/modules/mousejump/layout.py tuxtoys/settings/mouseutilities_page.py
+msgid "Bezelled"
+msgstr ""
+
+#. TRANSLATORS: Mouse Jump's preview style with no frames between the screens.
+#: tuxtoys/modules/mousejump/layout.py tuxtoys/modules/shortcutguide/apps.py tuxtoys/settings/mouseutilities_page.py
+msgid "Compact"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Change its keys in the Keyboard settings, under TuxToys: Mouse Jump."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Height (px)"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Width (px)"
+msgstr ""
+
+#: tuxtoys/cli.py tuxtoys/client.py tuxtoys/modules/mousejump/__init__.py tuxtoys/modules/mousejump/layout.py tuxtoys/modules/mousejump/module.py tuxtoys/modules/mousejump/options.py tuxtoys/mouseutilities/mousejump.py tuxtoys/settings/catalog.py tuxtoys/settings/mouseutilities_page.py
+msgid "Mouse Jump"
+msgstr ""
+
+#: tuxtoys/cli.py
+msgid "Mouse Jump is switched off in TuxToys."
+msgstr ""
+
+#: tuxtoys/cli.py
+msgid "Open Mouse Jump's picture of your screens, or put it away."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Open it with a keyboard shortcut"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Preview style"
+msgstr ""
+
+#: tuxtoys/modules/mousejump/module.py
+msgid "Sends the pointer anywhere from a small picture of your screens, with Super+Shift+D."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Shows a small picture of your screens; a click on it sends the pointer there. Escape or a click elsewhere puts it away."
+msgstr ""
+
+#: tuxtoys/cli.py
+msgid "Switch it on with: tuxtoys modules enable mousejump"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "The largest the picture gets; never larger than the screen it opens on."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Thumbnail size"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Use Mouse Jump"
+msgstr ""
+
+#: tuxtoys/cli.py
+msgid "send the pointer anywhere from a picture of your screens"
+msgstr ""

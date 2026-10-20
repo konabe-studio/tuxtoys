@@ -19,4 +19,5 @@ AVAILABLE: dict[str, str] = {
     "findmymouse": "tuxtoys.modules.findmymouse.module:FindMyMouse",
     "mousehighlighter": "tuxtoys.modules.mousehighlighter.module:MouseHighlighter",
     "crosshairs": "tuxtoys.modules.crosshairs.module:Crosshairs",
+    "mousejump": "tuxtoys.modules.mousejump.module:MouseJump",
 }

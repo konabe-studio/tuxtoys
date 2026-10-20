@@ -39,7 +39,7 @@ Description: power-user utilities for Linux Mint Cinnamon
  by Microsoft PowerToys, each switched on or off in one place and built on
  what Cinnamon already provides.
  .
- This release carries sixteen tools: Awake keeps the computer from sleeping
+ This release carries seventeen tools: Awake keeps the computer from sleeping
  without changing the power settings; Light Switch switches between Linux
  Mint's day and dark modes on a schedule; Hosts File Editor edits /etc/hosts;
  Environment Variables sets your variables, profiles of them, and the
@@ -48,8 +48,8 @@ Description: power-user utilities for Linux Mint Cinnamon
  Text Extractor copies the text in any part of it; Shortcut Guide shows
  Cinnamon's keyboard shortcuts and the active app's; Find My Mouse shows
  where the pointer is, Mouse Highlighter your clicks and Mouse Pointer
- Crosshairs lines through it; File Locksmith shows which processes hold a
- file open; New+ manages the templates of Nemo's Create New Document; Image
- Resizer resizes pictures and Rename+ renames many files at once, both from
- Nemo's right-click menu. They come with a panel icon, a settings window and
- the tuxtoys command.
+ Crosshairs lines through it, and Mouse Jump sends it anywhere; File
+ Locksmith shows which processes hold a file open; New+ manages the
+ templates of Nemo's Create New Document; Image Resizer resizes pictures and
+ Rename+ renames many files at once, both from Nemo's right-click menu. They
+ come with a panel icon, a settings window and the tuxtoys command.

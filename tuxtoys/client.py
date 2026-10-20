@@ -123,6 +123,10 @@ class Client:
         """The gliding cursor's next step, through the mouse tools' helper."""
         self._call(MOUSE_PATH, MOUSE_INTERFACE, "GlideCursor", None, None, MOUSE_BUS_NAME)
 
+    def jump_mouse(self) -> None:
+        """Mouse Jump's preview, or the preview put away, through the mouse tools' helper."""
+        self._call(MOUSE_PATH, MOUSE_INTERFACE, "JumpMouse", None, None, MOUSE_BUS_NAME)
+
     def _call(
         self,
         path: str,
