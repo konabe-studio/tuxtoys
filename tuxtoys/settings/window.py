@@ -41,7 +41,7 @@ from tuxtoys.settings.screenruler_page import ScreenRulerPage  # noqa: E402
 from tuxtoys.settings.shortcutguide_page import ShortcutGuidePage  # noqa: E402
 from tuxtoys.settings.simple_page import SimplePage  # noqa: E402
 from tuxtoys.settings.textextractor_page import TextExtractorPage  # noqa: E402
-from tuxtoys.settings.widgets import scroll_passes_through  # noqa: E402
+from tuxtoys.settings.widgets import scroll_passes_through, wrap_descriptions  # noqa: E402
 
 SIDEBAR_WIDTH = 200
 
@@ -254,6 +254,9 @@ class SettingsWindow(Gtk.ApplicationWindow):
         # Scrolling the page must not turn the fields it passes over, those added later too.
         scroll_passes_through(widget)
         widget.connect("size-allocate", lambda page, _area: scroll_passes_through(page))
+        # The window must be able to get narrower than the longest description.
+        wrap_descriptions(widget)
+        widget.connect("size-allocate", lambda page, _area: wrap_descriptions(page))
         # Shown before they are added: a GtkListBox gives no header to a hidden row, and a
         # GtkStack does not switch to a hidden page.
         scroller.show_all()
