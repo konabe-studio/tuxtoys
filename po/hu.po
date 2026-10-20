@@ -4045,3 +4045,107 @@ msgstr "Mouse Jump használata"
 #: tuxtoys/cli.py
 msgid "send the pointer anywhere from a picture of your screens"
 msgstr "a mutató elküldése bárhová a képernyők képéről"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Background color 1"
+msgstr "1. háttérszín"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Background color 2"
+msgstr "2. háttérszín"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Where the preview's background gradient starts."
+msgstr "Az előnézeti kép háttérátmenetének kezdőszíne."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Where the preview's background gradient ends."
+msgstr "Az előnézeti kép háttérátmenetének zárószíne."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Border thickness"
+msgstr "Szegély vastagsága"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Of the border round the preview, in pixels."
+msgstr "Az előnézeti képet körülvevő szegély vastagsága, képpontban."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Border color"
+msgstr "Szegélyszín"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Of the border round the preview."
+msgstr "Az előnézeti képet körülvevő szegély színe."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Border 3D depth"
+msgstr "Szegély 3D-s mélysége"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "How much of the preview's border is drawn raised, in pixels."
+msgstr "Az előnézeti képet körülvevő szegély 3D-s hatásának szélessége, képpontban."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Border padding"
+msgstr "Szegély kitöltése"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Between the preview's border and the screens' pictures, in pixels."
+msgstr "Az előnézeti kép szegélye és a képernyőképek közötti hely, képpontban."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Bezel thickness"
+msgstr "Foglalat vastagsága"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Of the border round each screen's picture, in pixels."
+msgstr "Az egyes képernyőképeket körülvevő szegély vastagsága, képpontban."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Bezel color"
+msgstr "Foglalat színe"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Of the border round each screen's picture."
+msgstr "Az egyes képernyőképeket körülvevő szegély színe."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Bezel 3D depth"
+msgstr "Foglalat 3D-s mélysége"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "How much of each bezel is drawn raised, in pixels."
+msgstr "A foglalatok 3D-s hatásának szélessége, képpontban."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Screen margin"
+msgstr "Képernyőtávolság"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "The gap between the screens' pictures, in pixels."
+msgstr "Az egyes képernyőképek közötti hely, képpontban."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Screen color 1"
+msgstr "1. képernyőszín"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Screen color 2"
+msgstr "2. képernyőszín"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Where the gradient behind each screen's picture starts."
+msgstr "Az egyes képernyőképek mögötti átmenet kezdőszíne."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Where the gradient behind each screen's picture ends."
+msgstr "Az egyes képernyőképek mögötti átmenet zárószíne."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Copy to the custom preview style"
+msgstr "Másolás egyéni előnézeti stílusba"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "One of the two ready-made styles, or a custom one."
+msgstr "A két kész stílus egyike, vagy egy egyéni."

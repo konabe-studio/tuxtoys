@@ -12,13 +12,13 @@ from gi.repository import Gdk, Gtk
 
 from tuxtoys.alwaysontop.border import theme_accent
 from tuxtoys.modules.mousejump.layout import (
-    STYLES,
     Box,
     Layout,
     Style,
     jump_by_key,
     jump_to,
     layout,
+    rgb,
 )
 from tuxtoys.modules.mousejump.options import Options
 from tuxtoys.mouseutilities.pointer import pointer_now
@@ -124,34 +124,38 @@ class Preview(Gtk.Window):
     def _on_draw(self, _window: Gtk.Window, context: cairo.Context) -> bool:
         style = self.style
         _x, _y, width, height = self.found.window
-        top_color, bottom_color = style.canvas_colors
         gradient = cairo.LinearGradient(0, 0, 0, height)
-        gradient.add_color_stop_rgb(0, *top_color)
-        gradient.add_color_stop_rgb(1, *bottom_color)
+        gradient.add_color_stop_rgb(0, *rgb(style.color1))
+        gradient.add_color_stop_rgb(1, *rgb(style.color2))
         context.set_source(gradient)
         context.paint()
-        border = style.canvas_border
+        border = style.border
         if border:
-            context.set_source_rgb(*theme_accent())
+            color = rgb(style.border_color) if style.border_color else theme_accent()
+            context.set_source_rgb(*color)
             context.set_line_width(border)
             context.rectangle(border / 2, border / 2, width - border, height - border)
             context.stroke()
+            self._draw_depth(context, (0, 0, width, height), min(style.border_depth, border))
         for screen in self.found.screens:
             self._draw_screen(context, screen.outer, screen.content, screen.monitor)
         return True
 
     def _draw_screen(self, context: cairo.Context, outer: Box, content: Box, monitor: Box) -> None:
         style = self.style
-        margin = style.screen_margin
+        margin = style.margin
         left, top, width, height = outer
         bezel = (left + margin, top + margin, width - 2 * margin, height - 2 * margin)
-        if style.screen_border:
-            context.set_source_rgb(*style.screen_border_color)
+        if style.bezel:
+            context.set_source_rgb(*rgb(style.bezel_color))
             context.rectangle(*bezel)
             context.fill()
-            self._draw_depth(context, bezel, style.screen_depth)
+            self._draw_depth(context, bezel, min(style.bezel_depth, style.bezel))
         x, y, w, h = content
-        context.set_source_rgb(*style.screen_background)
+        gradient = cairo.LinearGradient(0, y, 0, y + h)
+        gradient.add_color_stop_rgb(0, *rgb(style.screen1))
+        gradient.add_color_stop_rgb(1, *rgb(style.screen2))
+        context.set_source(gradient)
         context.rectangle(x, y, w, h)
         context.fill()
         if self.picture is None or not w or not h:
@@ -209,7 +213,7 @@ class MouseJumpTool:
             return
         # Taken before the preview shows, so it is not in its own picture.
         picture = capture_screen()
-        style = STYLES[self.options.style]
+        style = self.options.preview_style()
         found = layout(screens, pointer_now(), (self.options.width, self.options.height), style)
         self._preview = Preview(found, picture, style, screens, primary)
         self._preview.show()

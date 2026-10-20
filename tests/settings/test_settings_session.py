@@ -1177,6 +1177,13 @@ def test_mouse_jump_part_shows_and_saves_its_settings(client: FakeClient) -> Non
     assert client.jump_calls[-1] == {"style": "compact"}
     page.width.content_widget.set_value(1200)
     assert client.jump_calls[-1] == {"width": 1200}
+    assert all(not r.get_reveal_child() for r in page.custom_revealers)
+    page.style.content_widget.set_active_id("bezelled")
+    page._copy_to_custom()
+    assert client.jump_calls[-1]["style"] == "custom"
+    assert client.jump_calls[-1]["custom_bezel"] == 12
+    assert all(r.get_reveal_child() for r in page.custom_revealers)
+    assert not page.copy_revealer.get_reveal_child()
 
 
 def test_the_shared_page_hands_each_part_its_own_settings(client: FakeClient) -> None:

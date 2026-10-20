@@ -184,6 +184,18 @@ MOUSEJUMP_SETTINGS = {
     "width": "u",
     "height": "u",
     "style": "s",
+    "custom_color1": "s",
+    "custom_color2": "s",
+    "custom_border": "u",
+    "custom_border_color": "s",
+    "custom_border_depth": "u",
+    "custom_padding": "u",
+    "custom_bezel": "u",
+    "custom_bezel_color": "s",
+    "custom_bezel_depth": "u",
+    "custom_margin": "u",
+    "custom_screen1": "s",
+    "custom_screen2": "s",
 }
 # Every module's settings types, by module id, for clients that send settings.
 MODULE_SETTINGS = {

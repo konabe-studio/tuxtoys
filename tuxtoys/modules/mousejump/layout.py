@@ -16,35 +16,43 @@ Box = tuple[int, int, int, int]
 Color = tuple[float, float, float]
 
 
-def _hex(color: str) -> Color:
+def rgb(color: str) -> Color:
+    """A "#rrggbb" color as cairo takes it."""
     red, green, blue = (int(color[index : index + 2], 16) / 255 for index in (1, 3, 5))
     return red, green, blue
 
 
 @dataclass(frozen=True)
 class Style:
-    # Around the whole preview, in the theme's highlight color.
-    canvas_border: int
-    canvas_padding: int
+    """The parts of a preview's look, named as PowerToys' custom style names them. Colors are
+    "#rrggbb"; a border color of "" is the theme's highlight color.
+    """
+
     # The preview's background, a gradient from the first color to the second.
-    canvas_colors: tuple[Color, Color]
-    # Around each monitor's picture.
-    screen_margin: int
-    screen_border: int
-    # How much of the border is drawn raised, lighter above and darker below.
-    screen_depth: int
-    screen_border_color: Color
-    screen_background: Color
+    color1: str
+    color2: str
+    # Round the whole preview: how wide, its color, how much of it is drawn raised.
+    border: int
+    border_color: str
+    border_depth: int
+    # Between that border and the monitors.
+    padding: int
+    # Round each monitor's picture: the bezel, and the gap between the pictures.
+    bezel: int
+    bezel_color: str
+    bezel_depth: int
+    margin: int
+    # Behind each monitor's picture, a gradient too.
+    screen1: str
+    screen2: str
 
 
-BLUE = (_hex("#0d57d2"), _hex("#0344c0"))
-MIDNIGHT_BLUE = _hex("#191970")
-BEZEL = _hex("#222222")
+STYLE_FIELDS = tuple(Style.__dataclass_fields__)
 
 # PowerToys' two styles, its Compact (the old look) and Bezelled.
 STYLES = {
-    "compact": Style(6, 0, BLUE, 0, 0, 0, BEZEL, MIDNIGHT_BLUE),
-    "bezelled": Style(6, 4, BLUE, 4, 12, 4, BEZEL, MIDNIGHT_BLUE),
+    "compact": Style("#0d57d2", "#0344c0", 6, "", 0, 0, 0, "#222222", 0, 0, "#191970", "#191970"),
+    "bezelled": Style("#0d57d2", "#0344c0", 6, "", 0, 4, 12, "#222222", 4, 4, "#191970", "#191970"),
 }
 
 
@@ -100,7 +108,7 @@ def layout(
     )
     most_width = min(largest[0], active[2])
     most_height = min(largest[1], active[3])
-    frame = style.canvas_border + style.canvas_padding
+    frame = style.border + style.padding
     room_width, room_height = most_width - 2 * frame, most_height - 2 * frame
     desktop = _union(monitors)
     scale = min(room_width / desktop[2], room_height / desktop[3])
@@ -111,7 +119,7 @@ def layout(
         right = frame + round((monitor[0] + monitor[2] - desktop[0]) * scale)
         bottom = frame + round((monitor[1] + monitor[3] - desktop[1]) * scale)
         outer = (left, top, right - left, bottom - top)
-        inset = style.screen_margin + style.screen_border
+        inset = style.margin + style.bezel
         content = (left + inset, top + inset, outer[2] - 2 * inset, outer[3] - 2 * inset)
         screens.append(Screen(outer, content, monitor))
     used = _union([screen.outer for screen in screens])
