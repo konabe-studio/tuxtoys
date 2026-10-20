@@ -14,7 +14,15 @@ gi.require_version("Gtk", "3.0")
 
 from gi.repository import Gdk, GLib, Gtk  # noqa: E402
 
-from tuxtoys.modules.mousehighlighter.effects import Dim, Disc, Line, Ring, Shape  # noqa: E402
+from tuxtoys.modules.mouseutilities.shapes import (  # noqa: E402
+    Dim,
+    Disc,
+    Layer,
+    Line,
+    Rect,
+    Ring,
+    Shape,
+)
 
 # What the canvas asks for each frame: the shapes, and whether more frames are wanted.
 Frame = Callable[[], tuple[Sequence[Shape], bool]]
@@ -52,8 +60,12 @@ class Canvas(Gtk.Window):
         return GLib.SOURCE_REMOVE
 
     def _on_tick(self, _widget: Gtk.Widget, _clock: Gdk.FrameClock) -> bool:
-        self._shapes, more = self._frame()
-        self.queue_draw()
+        shapes, more = self._frame()
+        # Drawn again only when something changed: a tool that follows the pointer asks for
+        # every frame while it is on.
+        if list(shapes) != list(self._shapes):
+            self._shapes = shapes
+            self.queue_draw()
         if more:
             return GLib.SOURCE_CONTINUE
         self._tick = 0
@@ -71,6 +83,20 @@ class Canvas(Gtk.Window):
 
 
 def draw(context: cairo.Context, shape: Shape) -> None:
+    if isinstance(shape, Layer):
+        context.push_group()
+        for inner in shape.shapes:
+            draw(context, inner)
+        context.pop_group_to_source()
+        context.set_operator(cairo.OPERATOR_OVER)
+        context.paint_with_alpha(shape.opacity)
+        return
+    if isinstance(shape, Rect):
+        context.set_operator(cairo.OPERATOR_OVER)
+        context.rectangle(shape.x, shape.y, shape.width, shape.height)
+        context.set_source_rgba(*shape.color)
+        context.fill()
+        return
     if isinstance(shape, Dim):
         context.set_operator(cairo.OPERATOR_SOURCE)
         context.set_source_rgba(*shape.color)

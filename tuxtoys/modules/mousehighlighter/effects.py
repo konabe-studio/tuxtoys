@@ -20,6 +20,18 @@ from dataclasses import dataclass
 
 from tuxtoys.inputwatch.detect import ButtonEvent, Event, Motion
 from tuxtoys.modules.mousehighlighter.options import Options
+from tuxtoys.modules.mouseutilities.shapes import (
+    Color,
+    Dim,
+    Disc,
+    Line,
+    Ring,
+    Shape,
+    faded,
+    rgba,
+)
+
+__all__ = ["Color", "Dim", "Disc", "Highlighter", "Line", "Ring", "Shape", "rgba"]
 
 LEFT = 1
 RIGHT = 3
@@ -31,61 +43,6 @@ SPOT_OUT_MS = 200
 PRESSED_SPOT = 0.85
 HOLD_MS = 180
 HOLD_FADE_IN_MS = 120
-
-Color = tuple[float, float, float, float]
-
-
-@dataclass(frozen=True)
-class Disc:
-    """A filled circle; `soft` fades from its color at the middle to nothing at its edge."""
-
-    x: float
-    y: float
-    radius: float
-    color: Color
-    soft: bool = False
-
-
-@dataclass(frozen=True)
-class Ring:
-    x: float
-    y: float
-    radius: float
-    width: float
-    color: Color
-
-
-@dataclass(frozen=True)
-class Line:
-    x1: float
-    y1: float
-    x2: float
-    y2: float
-    width: float
-    color: Color
-
-
-@dataclass(frozen=True)
-class Dim:
-    """The whole screen in `color` but for a circle around (x, y)."""
-
-    x: float
-    y: float
-    radius: float
-    color: Color
-
-
-Shape = Disc | Ring | Line | Dim
-
-
-def rgba(color: str) -> Color:
-    red, green, blue, alpha = (int(color[index : index + 2], 16) / 255 for index in (1, 3, 5, 7))
-    return red, green, blue, alpha
-
-
-def faded(color: Color, factor: float) -> Color:
-    red, green, blue, alpha = color
-    return red, green, blue, alpha * min(max(factor, 0.0), 1.0)
 
 
 def lerp(start: float, end: float, progress: float) -> float:
