@@ -9,6 +9,9 @@ tuxtoys (0.5.0~dev) UNRELEASED; urgency=medium
     as PowerToys' Find My Mouse does. It watches only the pointer and the
     modifier keys, through the X RECORD extension, and takes nothing from
     other programs.
+  * Mouse Highlighter shows your clicks on the screen after Super+Shift+H,
+    as a ripple, a circle or a spotlight, as PowerToys' Mouse Highlighter
+    does. The mouse tools share one helper process.
 
  -- Kōnabe Studio <konabe@proton.me>  Mon, 19 Oct 2026 10:00:00 +0200
 

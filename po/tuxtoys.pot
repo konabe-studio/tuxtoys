@@ -3533,6 +3533,145 @@ msgid "shine a spotlight on the pointer"
 msgstr ""
 
 #: tuxtoys/settings/mouseutilities_page.py
+msgid "Always highlight color"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Change its keys in the Keyboard settings, under TuxToys: Mouse Highlighter."
+msgstr ""
+
+#. TRANSLATORS: a Mouse Highlighter mode: a circle under the pointer at each click.
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Circle highlight"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Crosshairs when the right button is let go of"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Duration (ms)"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Fade delay (ms)"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Fade duration (ms)"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Follow the pointer while a button is held"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Highlight mode"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "How far the ripple goes out."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "How long a ripple takes."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "How long it then takes to fade."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "How long the circle stays after the button is let go of."
+msgstr ""
+
+#: tuxtoys/modules/mousehighlighter/options.py tuxtoys/settings/mouseutilities_page.py
+msgid "Intensity"
+msgstr ""
+
+#: tuxtoys/cli.py tuxtoys/client.py tuxtoys/modules/mousehighlighter/__init__.py tuxtoys/modules/mousehighlighter/effects.py tuxtoys/modules/mousehighlighter/module.py tuxtoys/modules/mousehighlighter/options.py tuxtoys/mouseutilities/highlighter.py tuxtoys/settings/catalog.py tuxtoys/settings/mouseutilities_page.py
+msgid "Mouse Highlighter"
+msgstr ""
+
+#: tuxtoys/cli.py
+msgid "Mouse Highlighter is switched off in TuxToys."
+msgstr ""
+
+#: tuxtoys/modules/awake/module.py tuxtoys/settings/mouseutilities_page.py
+msgid "On from the start"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Primary button highlight color"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Radius (px)"
+msgstr ""
+
+#. TRANSLATORS: a Mouse Highlighter mode: a ring going out from each click.
+#: tuxtoys/modules/mousehighlighter/effects.py tuxtoys/settings/mouseutilities_page.py
+msgid "Ripple"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Secondary button highlight color"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Shows your clicks from login on, without the shortcut."
+msgstr ""
+
+#: tuxtoys/modules/mousehighlighter/module.py
+msgid "Shows your clicks on the screen, after Super+Shift+H."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Shows your clicks. Its shortcut turns it on and off."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Size (px)"
+msgstr ""
+
+#. TRANSLATORS: a Mouse Highlighter mode: the screen dimmed around the pointer.
+#: tuxtoys/modules/mousehighlighter/effects.py tuxtoys/mouseutilities/findmymouse.py tuxtoys/mouseutilities/spotlight.py tuxtoys/settings/mouseutilities_page.py
+msgid "Spotlight"
+msgstr ""
+
+#: tuxtoys/cli.py
+msgid "Switch it on with: tuxtoys modules enable mousehighlighter"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "The size of the circle or of the spotlight."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "The style of the highlight, and its look below."
+msgstr ""
+
+#: tuxtoys/cli.py
+msgid "Turn Mouse Highlighter's highlighting of your clicks on or off."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Turn it on and off with a keyboard shortcut"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Under the pointer when no button is held. Fully transparent, it is off."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Use Mouse Highlighter"
+msgstr ""
+
+#: tuxtoys/cli.py
+msgid "show your clicks, or stop showing them"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
 #, python-brace-format
-msgid "{keys} is in use already. Give Find My Mouse other keys in the Keyboard settings."
+msgid "{keys} is in use already. Give {tool} other keys in the Keyboard settings."
 msgstr ""

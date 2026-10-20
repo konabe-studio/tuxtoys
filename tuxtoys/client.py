@@ -111,6 +111,10 @@ class Client:
         """Find My Mouse's spotlight on, or off again, through the mouse tools' helper."""
         self._call(MOUSE_PATH, MOUSE_INTERFACE, "FindMouse", None, None, MOUSE_BUS_NAME)
 
+    def toggle_highlighter(self) -> None:
+        """Mouse Highlighter on, or off again, through the mouse tools' helper."""
+        self._call(MOUSE_PATH, MOUSE_INTERFACE, "ToggleHighlighter", None, None, MOUSE_BUS_NAME)
+
     def _call(
         self,
         path: str,

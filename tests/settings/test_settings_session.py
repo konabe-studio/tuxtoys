@@ -26,6 +26,7 @@ from tuxtoys.modules.findmymouse.options import Options as MouseOptions  # noqa:
 from tuxtoys.modules.hosts.options import Options as HostsOptions  # noqa: E402
 from tuxtoys.modules.imageresizer.options import Options as ResizerOptions  # noqa: E402
 from tuxtoys.modules.imageresizer.options import Size as ResizerSize  # noqa: E402
+from tuxtoys.modules.mousehighlighter.options import Options as HighlighterOptions  # noqa: E402
 from tuxtoys.modules.renameplus.options import Options as RenameOptions  # noqa: E402
 from tuxtoys.modules.screenruler.options import Options as RulerOptions  # noqa: E402
 from tuxtoys.modules.shortcutguide import usersheets  # noqa: E402
@@ -106,6 +107,8 @@ class FakeClient:
         self.guide_calls: list[dict] = []
         self.mouse_settings = MouseOptions().settings()
         self.mouse_calls: list[dict] = []
+        self.highlighter_settings = HighlighterOptions().settings()
+        self.highlighter_calls: list[dict] = []
         self.ruler_calls: list[dict] = []
         self.hosts_settings = HostsOptions().settings()
         self.hosts_calls: list[dict] = []
@@ -151,6 +154,7 @@ class FakeClient:
             ModuleInfo("textextractor", "Text Extractor", "", "on", ""),
             ModuleInfo("shortcutguide", "Shortcut Guide", "", "on", ""),
             ModuleInfo("findmymouse", "Find My Mouse", "", "on", ""),
+            ModuleInfo("mousehighlighter", "Mouse Highlighter", "", "on", ""),
         ]
 
     def set_module_enabled(self, module_id: str, enabled: bool) -> None:
@@ -168,6 +172,8 @@ class FakeClient:
     def module_settings(self, module_id: str) -> dict:
         if module_id == "findmymouse":
             return dict(self.mouse_settings)
+        if module_id == "mousehighlighter":
+            return dict(self.highlighter_settings)
         if module_id == "lightswitch":
             return dict(self.light_settings)
         if module_id == "alwaysontop":
@@ -195,6 +201,11 @@ class FakeClient:
     def set_module_settings(self, module_id: str, changes: Mapping[str, object]) -> None:
         if self.fail:
             raise self.fail
+        if module_id == "mousehighlighter":
+            self.highlighter_calls.append(dict(changes))
+            options = HighlighterOptions.read(self.highlighter_settings).update(changes)
+            self.highlighter_settings = options.settings()
+            return
         if module_id == "findmymouse":
             self.mouse_calls.append(dict(changes))
             self.mouse_settings = MouseOptions.read(self.mouse_settings).update(changes).settings()
@@ -420,6 +431,7 @@ def test_the_sidebar_starts_with_the_overview_then_the_tools_under_headings(
         "textextractor",
         "shortcutguide",
         "findmymouse",
+        "mousehighlighter",
         "locksmith",
         "newplus",
         "imageresizer",
@@ -434,7 +446,8 @@ def test_the_sidebar_starts_with_the_overview_then_the_tools_under_headings(
     assert rows[6].get_header().get_text() == "Windows"
     assert rows[7].get_header().get_text() == "Screen"
     assert rows[11].get_header().get_text() == "Input"
-    assert rows[12].get_header().get_text() == "Files"
+    assert rows[12].get_header() is None
+    assert rows[13].get_header().get_text() == "Files"
     assert rows[11].stack == "mouseutilities"
     assert rows[0].get_child().get_children()[-1].get_text() == "Home"
     assert window.stack.get_visible_child_name() == "overview"
@@ -1040,13 +1053,16 @@ def mouse_page(client: FakeClient, flags: dict[str, bool] | None = None) -> Mous
     return MouseUtilitiesPage(
         client,
         lambda message: None,
-        FakeShortcut("<Shift><Super>f"),
+        {
+            "findmymouse": FakeShortcut("<Shift><Super>f"),
+            "mousehighlighter": FakeShortcut("<Shift><Super>h"),
+        },
         lambda schema, key, default: found.get(key, default),
     )
 
 
 def test_find_my_mouse_part_shows_and_saves_its_settings(client: FakeClient) -> None:
-    page = mouse_page(client)
+    page = mouse_page(client).findmymouse
     assert page.activation.content_widget.get_active_id() == "ctrl-left"
     assert not any(r.get_reveal_child() for r in page.shake_revealers)
     assert not page.keys_revealer.get_reveal_child()
@@ -1069,7 +1085,7 @@ def test_find_my_mouse_part_shows_and_saves_its_settings(client: FakeClient) -> 
 
 
 def test_find_my_mouse_part_tells_of_cinnamon_s_own_settings(client: FakeClient) -> None:
-    page = mouse_page(client, {"locate-pointer": True, "enable-animations": False})
+    page = mouse_page(client, {"locate-pointer": True, "enable-animations": False}).findmymouse
     assert page.locate_revealer.get_reveal_child()
     assert page.animations_revealer.get_reveal_child()
     assert not page.duration.get_sensitive()
@@ -1080,6 +1096,33 @@ def test_find_my_mouse_part_tells_of_cinnamon_s_own_settings(client: FakeClient)
 def test_the_mouse_row_opens_the_shared_page(window: SettingsWindow) -> None:
     window.show_page("findmymouse")
     assert window.stack.get_visible_child_name() == "mouseutilities"
+    window.show_page("mousehighlighter")
+    assert window.stack.get_visible_child_name() == "mouseutilities"
+
+
+def test_highlighter_part_shows_the_rows_of_its_mode(client: FakeClient) -> None:
+    page = mouse_page(client).highlighter
+    assert page.mode.content_widget.get_active_id() == "ripple"
+    assert page.keys.get_text() == "Shift+Super+H"
+    shown = {key for key, (revealer, _modes) in page.rows.items() if revealer.get_reveal_child()}
+    assert "intensity" in shown
+    assert "fade_delay" not in shown
+    page.mode.content_widget.set_active_id("circle")
+    assert client.highlighter_calls[-1] == {"mode": "circle"}
+    shown = {key for key, (revealer, _modes) in page.rows.items() if revealer.get_reveal_child()}
+    assert {"fade_delay", "always_color", "primary_color"} <= shown
+    assert "intensity" not in shown
+    page.follow.content_widget.set_active(False)
+    assert client.highlighter_calls[-1] == {"follow": False}
+
+
+def test_the_shared_page_hands_each_part_its_own_settings(client: FakeClient) -> None:
+    page = mouse_page(client)
+    page.show_module_settings(
+        "mousehighlighter", {**client.highlighter_settings, "mode": "spotlight"}
+    )
+    assert page.highlighter.mode.content_widget.get_active_id() == "spotlight"
+    assert page.findmymouse.activation.content_widget.get_active_id() == "ctrl-left"
 
 
 GIMP_SHEET = """{

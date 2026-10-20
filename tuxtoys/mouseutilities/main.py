@@ -2,7 +2,7 @@
 pointer and the modifier keys once, hands every event to each tool, and draws what they call
 for, until the daemon stops it. Started by the daemon with a --tool id=settings for each,
 not by hand. Its name on the session bus takes the tools' shortcuts, `tuxtoys findmymouse`
-for one.
+and `tuxtoys mousehighlighter`.
 """
 
 import argparse
@@ -15,11 +15,12 @@ from typing import Any
 
 log = logging.getLogger("tuxtoys-mouse-utilities")
 
-TOOLS = ("findmymouse",)
+TOOLS = ("findmymouse", "mousehighlighter")
 INTERFACE_XML = """
 <node>
   <interface name="{interface}">
     <method name="FindMouse"/>
+    <method name="ToggleHighlighter"/>
   </interface>
 </node>
 """
@@ -76,6 +77,13 @@ def main(argv: list[str] | None = None) -> int:
         from tuxtoys.mouseutilities.findmymouse import FindMyMouseTool
 
         running["findmymouse"] = FindMyMouseTool(Options.read(tools["findmymouse"]), bus)
+    if "mousehighlighter" in tools:
+        from tuxtoys.modules.mousehighlighter.options import Options as HighlighterOptions
+        from tuxtoys.mouseutilities.highlighter import HighlighterTool
+
+        running["mousehighlighter"] = HighlighterTool(
+            HighlighterOptions.read(tools["mousehighlighter"])
+        )
 
     def handle(event: Event) -> None:
         """In the watcher's thread: every tool hears every event."""
@@ -92,6 +100,8 @@ def main(argv: list[str] | None = None) -> int:
         method, invocation = arguments[4], arguments[6]
         if method == "FindMouse" and "findmymouse" in running:
             running["findmymouse"].toggle()
+        elif method == "ToggleHighlighter" and "mousehighlighter" in running:
+            running["mousehighlighter"].toggle()
         invocation.return_value(None)
 
     def on_bus(connection: Any, _name: str) -> None:  # noqa: ANN401, a Gio.DBusConnection

@@ -17,4 +17,5 @@ AVAILABLE: dict[str, str] = {
     "textextractor": "tuxtoys.modules.textextractor.module:TextExtractor",
     "shortcutguide": "tuxtoys.modules.shortcutguide.module:ShortcutGuide",
     "findmymouse": "tuxtoys.modules.findmymouse.module:FindMyMouse",
+    "mousehighlighter": "tuxtoys.modules.mousehighlighter.module:MouseHighlighter",
 }

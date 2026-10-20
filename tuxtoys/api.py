@@ -145,6 +145,23 @@ FINDMYMOUSE_SETTINGS = {
     "duration": "u",
     "excluded": "s",
 }
+MOUSEHIGHLIGHTER_SETTINGS = {
+    "shortcut": "b",
+    "auto_activate": "b",
+    "mode": "s",
+    "primary_color": "s",
+    "secondary_color": "s",
+    "always_color": "s",
+    "spotlight_color": "s",
+    "radius": "u",
+    "fade_delay": "u",
+    "fade_duration": "u",
+    "ripple_size": "u",
+    "intensity": "u",
+    "ripple_duration": "u",
+    "follow": "b",
+    "crosshairs": "b",
+}
 # Every module's settings types, by module id, for clients that send settings.
 MODULE_SETTINGS = {
     "awake": AWAKE_SETTINGS,
@@ -160,6 +177,7 @@ MODULE_SETTINGS = {
     "textextractor": TEXTEXTRACTOR_SETTINGS,
     "shortcutguide": SHORTCUTGUIDE_SETTINGS,
     "findmymouse": FINDMYMOUSE_SETTINGS,
+    "mousehighlighter": MOUSEHIGHLIGHTER_SETTINGS,
 }
 
 
