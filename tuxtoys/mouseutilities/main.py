@@ -86,7 +86,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     from tuxtoys.api import MOUSE_BUS_NAME, MOUSE_INTERFACE, MOUSE_PATH
-    from tuxtoys.inputwatch.detect import Event, Motion
+    from tuxtoys.inputwatch.detect import Event
     from tuxtoys.modules.findmymouse.options import Options
     from tuxtoys.modules.findmymouse.sonar import Action, Sonar
 
@@ -96,6 +96,9 @@ def main(argv: list[str] | None = None) -> int:
         log.error("bad settings: %s", error)
         return 2
     sonar = Sonar(options)
+    # The watcher's thread feeds the sonar every event, as many as the mouse sends; the main
+    # loop hears only what they call for. Both reach the sonar, one at a time.
+    lock = threading.Lock()
     spotlight = Spotlight(options, animations_on())
     bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
     ticking = 0
@@ -114,34 +117,42 @@ def main(argv: list[str] | None = None) -> int:
 
     def tick() -> bool:
         nonlocal ticking
-        if sonar.tick(now()) is Action.STOP:
+        with lock:
+            action = sonar.tick(now())
+            shown = sonar.shown
+        if action is Action.STOP:
             spotlight.put_away()
-        if not sonar.shown:
+        if not shown:
             ticking = 0
             return GLib.SOURCE_REMOVE
         return GLib.SOURCE_CONTINUE
 
-    def act(action: Action | None) -> None:
+    def act(action: Action | None) -> bool:
         nonlocal ticking
         if action is Action.SHOW:
             if not allowed():
-                sonar.cancel()
-                return
-            spotlight.show_at(sonar.pointer)
+                with lock:
+                    sonar.cancel()
+                return GLib.SOURCE_REMOVE
+            with lock:
+                pointer = sonar.pointer
+            spotlight.show_at(pointer)
             if not ticking:
                 ticking = GLib.timeout_add(TICK_MS, tick)
         elif action is Action.STOP:
             spotlight.put_away()
-
-    def handle(event: Event) -> bool:
-        act(sonar.feed(event, now()))
-        if sonar.shown and isinstance(event, Motion):
-            spotlight.move_to(sonar.pointer)
         return GLib.SOURCE_REMOVE
+
+    def handle(event: Event) -> None:
+        """In the watcher's thread."""
+        with lock:
+            action = sonar.feed(event, now())
+        if action is not None:
+            GLib.idle_add(act, action)
 
     def watch() -> None:
         try:
-            watch_input(lambda event: GLib.idle_add(handle, event))
+            watch_input(handle)
         except Exception:
             log.exception("stopped watching the mouse")
 
@@ -149,10 +160,12 @@ def main(argv: list[str] | None = None) -> int:
         method, invocation = arguments[4], arguments[6]
         if method == "FindMouse":
             display = Gdk.Display.get_default()
-            if display is not None:
-                _screen, x, y = display.get_default_seat().get_pointer().get_position()
-                sonar.pointer = (x, y)
-            act(sonar.toggle())
+            with lock:
+                if display is not None:
+                    _screen, x, y = display.get_default_seat().get_pointer().get_position()
+                    sonar.pointer = (x, y)
+                action = sonar.toggle()
+            act(action)
         invocation.return_value(None)
 
     def on_bus(connection: Any, _name: str) -> None:  # noqa: ANN401, a Gio.DBusConnection

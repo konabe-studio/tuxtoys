@@ -1048,13 +1048,13 @@ def mouse_page(client: FakeClient, flags: dict[str, bool] | None = None) -> Mous
 def test_find_my_mouse_part_shows_and_saves_its_settings(client: FakeClient) -> None:
     page = mouse_page(client)
     assert page.activation.content_widget.get_active_id() == "ctrl-left"
-    assert not any(row.get_visible() for row in page.shake_rows)
-    assert not page.keys_row.get_visible()
+    assert not any(r.get_reveal_child() for r in page.shake_revealers)
+    assert not page.keys_revealer.get_reveal_child()
     page.activation.content_widget.set_active_id("shake")
     assert client.mouse_calls[-1] == {"activation": "shake"}
-    assert all(row.get_visible() for row in page.shake_rows)
+    assert all(r.get_reveal_child() for r in page.shake_revealers)
     page.activation.content_widget.set_active_id("shortcut")
-    assert page.keys_row.get_visible()
+    assert page.keys_revealer.get_reveal_child()
     assert page.keys.get_text() == "Shift+Super+F"
     page.skip_gamemode.content_widget.set_active(False)
     assert client.mouse_calls[-1] == {"skip_gamemode": False}
@@ -1070,11 +1070,11 @@ def test_find_my_mouse_part_shows_and_saves_its_settings(client: FakeClient) -> 
 
 def test_find_my_mouse_part_tells_of_cinnamon_s_own_settings(client: FakeClient) -> None:
     page = mouse_page(client, {"locate-pointer": True, "enable-animations": False})
-    assert page.locate_notice.get_visible()
-    assert page.animations_notice.get_visible()
+    assert page.locate_revealer.get_reveal_child()
+    assert page.animations_revealer.get_reveal_child()
     assert not page.duration.get_sensitive()
     page.activation.content_widget.set_active_id("ctrl-right")
-    assert not page.locate_notice.get_visible()
+    assert not page.locate_revealer.get_reveal_child()
 
 
 def test_the_mouse_row_opens_the_shared_page(window: SettingsWindow) -> None:
