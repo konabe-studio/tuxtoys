@@ -14,6 +14,8 @@
     tuxtoys shortcutguide
     tuxtoys findmymouse
     tuxtoys mousehighlighter
+    tuxtoys crosshairs
+    tuxtoys glidingcursor
     tuxtoys modules [list | enable MODULE | disable MODULE]
 
 Exit status: 0 when done, 1 when TuxToys could not do it, 2 when the command line is wrong.
@@ -46,6 +48,8 @@ class Client(Protocol):
     def lightswitch_toggle(self) -> None: ...
     def find_mouse(self) -> None: ...
     def toggle_highlighter(self) -> None: ...
+    def toggle_crosshairs(self) -> None: ...
+    def glide_cursor(self) -> None: ...
 
 
 def main(
@@ -73,6 +77,8 @@ def main(
             run_findmymouse(client)
         elif args.command == "mousehighlighter":
             run_mousehighlighter(client)
+        elif args.command in ("crosshairs", "glidingcursor"):
+            run_crosshairs(client, args.command)
         elif args.command in (
             "hosts",
             "env",
@@ -109,6 +115,9 @@ def main(
         elif args.command == "textextractor":
             print(_("Text Extractor is switched off in TuxToys."), file=err)
             print(_("Switch it on with: tuxtoys modules enable textextractor"), file=err)
+        elif args.command in ("crosshairs", "glidingcursor"):
+            print(_("Mouse Pointer Crosshairs is switched off in TuxToys."), file=err)
+            print(_("Switch it on with: tuxtoys modules enable crosshairs"), file=err)
         elif args.command == "mousehighlighter":
             print(_("Mouse Highlighter is switched off in TuxToys."), file=err)
             print(_("Switch it on with: tuxtoys modules enable mousehighlighter"), file=err)
@@ -169,6 +178,18 @@ def run_mousehighlighter(client: Client) -> None:
     if not any(info.id == "mousehighlighter" and info.state == "on" for info in client.modules()):
         raise ModuleOff
     client.toggle_highlighter()
+
+
+def run_crosshairs(client: Client, command: str) -> None:
+    """The crosshairs on or off, or the gliding cursor's next step, as their shortcuts
+    do, while Mouse Pointer Crosshairs is switched on.
+    """
+    if not any(info.id == "crosshairs" and info.state == "on" for info in client.modules()):
+        raise ModuleOff
+    if command == "crosshairs":
+        client.toggle_crosshairs()
+    else:
+        client.glide_cursor()
 
 
 def run_window(client: Client, command: str, spawn: Callable[[list[str]], None]) -> None:
@@ -357,6 +378,19 @@ def parser() -> argparse.ArgumentParser:
         "mousehighlighter",
         help=_("show your clicks, or stop showing them"),
         description=_("Turn Mouse Highlighter's highlighting of your clicks on or off."),
+    )
+    commands.add_parser(
+        "crosshairs",
+        help=_("show crosshairs through the pointer, or put them away"),
+        description=_("Turn Mouse Pointer Crosshairs on or off."),
+    )
+    commands.add_parser(
+        "glidingcursor",
+        help=_("place the pointer and click with the keyboard, one step a run"),
+        description=_(
+            "The gliding cursor's next step: start a line across the screen, slow it,"
+            " turn to a line down the screen, slow it, and click where they cross."
+        ),
     )
     commands.add_parser(
         "env",

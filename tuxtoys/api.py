@@ -162,6 +162,23 @@ MOUSEHIGHLIGHTER_SETTINGS = {
     "follow": "b",
     "crosshairs": "b",
 }
+CROSSHAIRS_SETTINGS = {
+    "shortcut": "b",
+    "auto_activate": "b",
+    "color": "s",
+    "opacity": "u",
+    "radius": "u",
+    "thickness": "u",
+    "border_color": "s",
+    "border": "u",
+    "orientation": "s",
+    "auto_hide": "b",
+    "fixed": "b",
+    "fixed_length": "u",
+    "glide_shortcut": "b",
+    "glide_speed": "u",
+    "glide_slow": "u",
+}
 # Every module's settings types, by module id, for clients that send settings.
 MODULE_SETTINGS = {
     "awake": AWAKE_SETTINGS,
@@ -178,6 +195,7 @@ MODULE_SETTINGS = {
     "shortcutguide": SHORTCUTGUIDE_SETTINGS,
     "findmymouse": FINDMYMOUSE_SETTINGS,
     "mousehighlighter": MOUSEHIGHLIGHTER_SETTINGS,
+    "crosshairs": CROSSHAIRS_SETTINGS,
 }
 
 

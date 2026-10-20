@@ -1,8 +1,9 @@
 """What the mouse tools watch for, as pure logic: the pointer and the modifier keys as events,
 a key pressed twice in a row, and a shake of the mouse. Free of X11, so it tests anywhere.
 
-Only the modifier keys are told apart. Every other key arrives as OTHER, without saying
-which one it was: a key pressed in between is all a double press needs to know.
+Only the modifier keys and Escape are told apart. Every other key arrives as OTHER, without
+saying which one it was: a key pressed in between is all a double press needs to know, and
+Escape is how the gliding cursor is stopped.
 
 The double press and the shake follow PowerToys' Find My Mouse (FindMyMouse.cpp).
 """
@@ -19,6 +20,7 @@ class Key(Enum):
     SHIFT = "shift"
     ALT = "alt"
     SUPER = "super"
+    ESCAPE = "escape"
     # Any other key, which is never named.
     OTHER = "other"
 

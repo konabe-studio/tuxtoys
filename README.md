@@ -145,8 +145,8 @@ second of stillness once you have moved the mouse.
   GameMode runs a game, nor over apps you leave out.
 - **Its look:** the colors, the size of the spotlight and how it closes in, following
   Cinnamon's own setting for animations.
-- **What it watches:** the pointer, its buttons and the Ctrl, Shift, Alt and Super
-  keys, only while it is on. Any other key is only known as "a key", never which one,
+- **What it watches:** the pointer, its buttons and the Ctrl, Shift, Alt, Super and
+  Escape keys, only while it is on. Any other key is only known as "a key", never which one,
   and nothing is kept or sent anywhere. Nothing is taken from other programs either:
   every key and click still reaches them.
 
@@ -162,6 +162,19 @@ handy for recording the screen or showing something to others.
 - **On from the start,** if you would rather not press the shortcut.
 - It watches only the pointer and its buttons, with Find My Mouse's helper, and every
   click still reaches what is under it.
+
+### Mouse Pointer Crosshairs
+
+Press Super+Alt+P for crosshairs through the pointer, out to the edges of the screen,
+and again to put them away: easy to follow on a large screen or a recording.
+
+- **Their look:** color, opacity, the gap around the pointer, thickness, a border, only
+  one of the two lines, or lines of a fixed length.
+- **Out of a video's way:** they can hide while the pointer is hidden.
+- **Gliding cursor:** place the pointer and click with the keyboard alone. Press
+  Super+Alt+Period to send a line across the screen, again to slow it, again to hold it
+  and send a line down, again to slow that, and once more to click where they cross.
+  Escape stops it.
 
 ### File Locksmith
 

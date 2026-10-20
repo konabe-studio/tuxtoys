@@ -47,6 +47,13 @@ TOOLS = (
         "input-mouse-symbolic",
         "mouseutilities",
     ),
+    Tool(
+        "crosshairs",
+        "Mouse Pointer Crosshairs",
+        "input",
+        f"{APP_ID}-crosshairs-symbolic",
+        "mouseutilities",
+    ),
 )
 
 

@@ -184,7 +184,7 @@ def watch_input(handle: Callable[[Event], None]) -> None:
     """Hands `handle` every key press and release, pointer motion and mouse button of the
     session, as the X RECORD extension reports them, until it raises. It only listens:
     nothing is grabbed, so every other program gets its input as before. A key that is not
-    a modifier is handed on as Key.OTHER at once, without its keycode.
+    a modifier or Escape is handed on as Key.OTHER at once, without its keycode.
 
     Raises RuntimeError when the X server has no RECORD extension.
     """
@@ -206,6 +206,7 @@ def watch_input(handle: Callable[[Event], None]) -> None:
             XK.XK_Alt_R: Key.ALT,
             XK.XK_Super_L: Key.SUPER,
             XK.XK_Super_R: Key.SUPER,
+            XK.XK_Escape: Key.ESCAPE,
         }
         modifiers = {
             keycode: key
@@ -257,3 +258,55 @@ def watch_input(handle: Callable[[Event], None]) -> None:
     finally:
         local.close()
         recorder.close()
+
+
+def move_pointer(x: int, y: int) -> None:
+    """Puts the pointer at (x, y) on the screen, for the gliding cursor."""
+    from Xlib import display
+
+    screen = display.Display()
+    try:
+        screen.screen().root.warp_pointer(x, y)
+        screen.sync()
+    finally:
+        screen.close()
+
+
+def click() -> None:
+    """A left click where the pointer is, through the XTEST extension, as the gliding
+    cursor's last press sends one. Raises RuntimeError when the X server has no XTEST.
+    """
+    from Xlib import X, display
+    from Xlib.ext import xtest
+
+    screen = display.Display()
+    try:
+        if not screen.has_extension("XTEST"):
+            raise RuntimeError("the X server has no XTEST extension")
+        xtest.fake_input(screen, X.ButtonPress, 1)
+        xtest.fake_input(screen, X.ButtonRelease, 1)
+        screen.sync()
+    finally:
+        screen.close()
+
+
+def pointer_hidden() -> bool:
+    """Whether the pointer is hidden, as a video player hides it: the cursor X shows now has
+    no pixel that is not fully transparent. False where the XFIXES extension cannot tell.
+    """
+    from Xlib import display
+
+    screen = display.Display()
+    try:
+        if not screen.has_extension("XFIXES"):
+            return False
+        screen.xfixes_query_version()
+        image = screen.xfixes_get_cursor_image(screen.screen().root)
+        pixels = getattr(image, "cursor_image", None)
+        if not pixels:
+            return False
+        return not any(pixel >> 24 for pixel in pixels)
+    except Exception:  # an older python-xlib, or the server says no: assume it shows
+        return False
+    finally:
+        screen.close()

@@ -1,8 +1,8 @@
 """The mouse tools' helper: one process for every mouse tool that is on. It watches the
 pointer and the modifier keys once, hands every event to each tool, and draws what they call
 for, until the daemon stops it. Started by the daemon with a --tool id=settings for each,
-not by hand. Its name on the session bus takes the tools' shortcuts, `tuxtoys findmymouse`
-and `tuxtoys mousehighlighter`.
+not by hand. Its name on the session bus takes the tools' shortcuts: `tuxtoys findmymouse`,
+`tuxtoys mousehighlighter`, `tuxtoys crosshairs` and `tuxtoys glidingcursor`.
 """
 
 import argparse
@@ -15,12 +15,14 @@ from typing import Any
 
 log = logging.getLogger("tuxtoys-mouse-utilities")
 
-TOOLS = ("findmymouse", "mousehighlighter")
+TOOLS = ("findmymouse", "mousehighlighter", "crosshairs")
 INTERFACE_XML = """
 <node>
   <interface name="{interface}">
     <method name="FindMouse"/>
     <method name="ToggleHighlighter"/>
+    <method name="ToggleCrosshairs"/>
+    <method name="GlideCursor"/>
     <method name="Configure">
       <arg name="tool" type="s" direction="in"/>
       <arg name="settings" type="s" direction="in"/>
@@ -88,6 +90,11 @@ def main(argv: list[str] | None = None) -> int:
         running["mousehighlighter"] = HighlighterTool(
             HighlighterOptions.read(tools["mousehighlighter"])
         )
+    if "crosshairs" in tools:
+        from tuxtoys.modules.crosshairs.options import Options as CrosshairsOptions
+        from tuxtoys.mouseutilities.crosshairs import CrosshairsTool
+
+        running["crosshairs"] = CrosshairsTool(CrosshairsOptions.read(tools["crosshairs"]))
 
     def handle(event: Event) -> None:
         """In the watcher's thread: every tool hears every event."""
@@ -109,6 +116,10 @@ def main(argv: list[str] | None = None) -> int:
             running["findmymouse"].toggle()
         elif method == "ToggleHighlighter" and "mousehighlighter" in running:
             running["mousehighlighter"].toggle()
+        elif method == "ToggleCrosshairs" and "crosshairs" in running:
+            running["crosshairs"].toggle()
+        elif method == "GlideCursor" and "crosshairs" in running:
+            running["crosshairs"].glide()
         invocation.return_value(None)
 
     def configure(tool_id: str, settings: str, invocation: Any) -> None:  # noqa: ANN401
@@ -125,6 +136,10 @@ def main(argv: list[str] | None = None) -> int:
             from tuxtoys.modules.findmymouse.options import Options
 
             running[tool_id].configure(Options.read(found[tool_id]))
+        elif tool_id == "crosshairs":
+            from tuxtoys.modules.crosshairs.options import Options as CrosshairsOptions
+
+            running[tool_id].configure(CrosshairsOptions.read(found[tool_id]))
         else:
             from tuxtoys.modules.mousehighlighter.options import Options as HighlighterOptions
 

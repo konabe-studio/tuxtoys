@@ -49,15 +49,16 @@ def open_editor(show_error: Callable[[str], None]) -> None:
 
 
 class NumberRow(SettingsWidget):
-    """A label, a line under it that says what the number does, and a spin button."""
+    """A label, a line under it that says what the number does if any, and a spin button."""
 
     def __init__(self, label: str, detail: str, most: int) -> None:
         super().__init__()
         labels = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         labels.pack_start(SettingsLabel(label), False, False, 0)
-        small = Gtk.Label(label=detail, xalign=0, wrap=True, max_width_chars=60)
-        small.get_style_context().add_class("dim-label")
-        labels.pack_start(small, False, False, 0)
+        if detail:
+            small = Gtk.Label(label=detail, xalign=0, wrap=True, max_width_chars=60)
+            small.get_style_context().add_class("dim-label")
+            labels.pack_start(small, False, False, 0)
         self.content_widget = Gtk.SpinButton.new_with_range(0, most, 1)
         self.content_widget.set_valign(Gtk.Align.CENTER)
         self.pack_start(labels, True, True, 0)

@@ -115,6 +115,14 @@ class Client:
         """Mouse Highlighter on, or off again, through the mouse tools' helper."""
         self._call(MOUSE_PATH, MOUSE_INTERFACE, "ToggleHighlighter", None, None, MOUSE_BUS_NAME)
 
+    def toggle_crosshairs(self) -> None:
+        """The crosshairs on, or off again, through the mouse tools' helper."""
+        self._call(MOUSE_PATH, MOUSE_INTERFACE, "ToggleCrosshairs", None, None, MOUSE_BUS_NAME)
+
+    def glide_cursor(self) -> None:
+        """The gliding cursor's next step, through the mouse tools' helper."""
+        self._call(MOUSE_PATH, MOUSE_INTERFACE, "GlideCursor", None, None, MOUSE_BUS_NAME)
+
     def _call(
         self,
         path: str,

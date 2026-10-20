@@ -26,6 +26,7 @@ KEY_NAMES = {
     Key.SHIFT: "Shift",
     Key.ALT: "Alt",
     Key.SUPER: "Super",
+    Key.ESCAPE: "Escape",
     Key.OTHER: "Another key",
 }
 
