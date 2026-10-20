@@ -147,6 +147,7 @@ class SettingsWindow(Gtk.ApplicationWindow):
             "findmymouse": self.mouseutilities,
             "mousehighlighter": self.mouseutilities,
             "crosshairs": self.mouseutilities,
+            "mousejump": self.mouseutilities,
         }
         pages = self.pages
         for heading, tools in catalog.grouped():

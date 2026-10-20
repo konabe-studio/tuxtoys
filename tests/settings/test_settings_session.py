@@ -28,6 +28,7 @@ from tuxtoys.modules.hosts.options import Options as HostsOptions  # noqa: E402
 from tuxtoys.modules.imageresizer.options import Options as ResizerOptions  # noqa: E402
 from tuxtoys.modules.imageresizer.options import Size as ResizerSize  # noqa: E402
 from tuxtoys.modules.mousehighlighter.options import Options as HighlighterOptions  # noqa: E402
+from tuxtoys.modules.mousejump.options import Options as JumpOptions  # noqa: E402
 from tuxtoys.modules.renameplus.options import Options as RenameOptions  # noqa: E402
 from tuxtoys.modules.screenruler.options import Options as RulerOptions  # noqa: E402
 from tuxtoys.modules.shortcutguide import usersheets  # noqa: E402
@@ -112,6 +113,8 @@ class FakeClient:
         self.highlighter_calls: list[dict] = []
         self.crosshairs_settings = CrosshairsOptions().settings()
         self.crosshairs_calls: list[dict] = []
+        self.jump_settings = JumpOptions().settings()
+        self.jump_calls: list[dict] = []
         self.ruler_calls: list[dict] = []
         self.hosts_settings = HostsOptions().settings()
         self.hosts_calls: list[dict] = []
@@ -159,6 +162,7 @@ class FakeClient:
             ModuleInfo("findmymouse", "Find My Mouse", "", "on", ""),
             ModuleInfo("mousehighlighter", "Mouse Highlighter", "", "on", ""),
             ModuleInfo("crosshairs", "Mouse Pointer Crosshairs", "", "on", ""),
+            ModuleInfo("mousejump", "Mouse Jump", "", "on", ""),
         ]
 
     def set_module_enabled(self, module_id: str, enabled: bool) -> None:
@@ -180,6 +184,8 @@ class FakeClient:
             return dict(self.highlighter_settings)
         if module_id == "crosshairs":
             return dict(self.crosshairs_settings)
+        if module_id == "mousejump":
+            return dict(self.jump_settings)
         if module_id == "lightswitch":
             return dict(self.light_settings)
         if module_id == "alwaysontop":
@@ -207,6 +213,10 @@ class FakeClient:
     def set_module_settings(self, module_id: str, changes: Mapping[str, object]) -> None:
         if self.fail:
             raise self.fail
+        if module_id == "mousejump":
+            self.jump_calls.append(dict(changes))
+            self.jump_settings = JumpOptions.read(self.jump_settings).update(changes).settings()
+            return
         if module_id == "crosshairs":
             self.crosshairs_calls.append(dict(changes))
             options = CrosshairsOptions.read(self.crosshairs_settings).update(changes)
@@ -444,6 +454,7 @@ def test_the_sidebar_starts_with_the_overview_then_the_tools_under_headings(
         "findmymouse",
         "mousehighlighter",
         "crosshairs",
+        "mousejump",
         "locksmith",
         "newplus",
         "imageresizer",
@@ -459,7 +470,7 @@ def test_the_sidebar_starts_with_the_overview_then_the_tools_under_headings(
     assert rows[7].get_header().get_text() == "Screen"
     assert rows[11].get_header().get_text() == "Input"
     assert rows[12].get_header() is None
-    assert rows[14].get_header().get_text() == "Files"
+    assert rows[15].get_header().get_text() == "Files"
     assert rows[11].stack == "mouseutilities"
     assert rows[0].get_child().get_children()[-1].get_text() == "Home"
     assert window.stack.get_visible_child_name() == "overview"
@@ -1070,6 +1081,7 @@ def mouse_page(client: FakeClient, flags: dict[str, bool] | None = None) -> Mous
             "mousehighlighter": FakeShortcut("<Shift><Super>h"),
             "crosshairs": FakeShortcut("<Alt><Super>p"),
             "glidingcursor": FakeShortcut("<Alt><Super>period"),
+            "mousejump": FakeShortcut("<Shift><Super>d"),
         },
         lambda schema, key, default: found.get(key, default),
     )
@@ -1119,6 +1131,8 @@ def test_the_mouse_row_opens_the_shared_page(window: SettingsWindow) -> None:
     assert window.stack.get_visible_child_name() == "mouseutilities"
     window.show_page("crosshairs")
     assert window.stack.get_visible_child_name() == "mouseutilities"
+    window.show_page("mousejump")
+    assert window.stack.get_visible_child_name() == "mouseutilities"
 
 
 def test_highlighter_part_shows_the_rows_of_its_mode(client: FakeClient) -> None:
@@ -1153,6 +1167,16 @@ def test_crosshairs_part_shows_and_saves_its_settings(client: FakeClient) -> Non
     page.color.content_widget.set_rgba(rgba)
     page.color.content_widget.emit("color-set")
     assert client.crosshairs_calls[-1] == {"color": "#00ff00"}
+
+
+def test_mouse_jump_part_shows_and_saves_its_settings(client: FakeClient) -> None:
+    page = mouse_page(client).mousejump
+    assert page.keys.get_text() == "Shift+Super+D"
+    assert page.style.content_widget.get_active_id() == "bezelled"
+    page.style.content_widget.set_active_id("compact")
+    assert client.jump_calls[-1] == {"style": "compact"}
+    page.width.content_widget.set_value(1200)
+    assert client.jump_calls[-1] == {"width": 1200}
 
 
 def test_the_shared_page_hands_each_part_its_own_settings(client: FakeClient) -> None:

@@ -179,6 +179,12 @@ CROSSHAIRS_SETTINGS = {
     "glide_speed": "u",
     "glide_slow": "u",
 }
+MOUSEJUMP_SETTINGS = {
+    "shortcut": "b",
+    "width": "u",
+    "height": "u",
+    "style": "s",
+}
 # Every module's settings types, by module id, for clients that send settings.
 MODULE_SETTINGS = {
     "awake": AWAKE_SETTINGS,
@@ -196,6 +202,7 @@ MODULE_SETTINGS = {
     "findmymouse": FINDMYMOUSE_SETTINGS,
     "mousehighlighter": MOUSEHIGHLIGHTER_SETTINGS,
     "crosshairs": CROSSHAIRS_SETTINGS,
+    "mousejump": MOUSEJUMP_SETTINGS,
 }
 
 
