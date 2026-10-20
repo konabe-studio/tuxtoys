@@ -34,6 +34,7 @@ from xapp.SettingsWidgets import (  # noqa: E402
     Text,
 )
 
+from tuxtoys.alwaysontop.border import theme_accent  # noqa: E402
 from tuxtoys.api import ModuleInfo, ModuleOff, NotRunning, Refused  # noqa: E402
 from tuxtoys.core.i18n import _  # noqa: E402
 from tuxtoys.core.shortcut import CustomShortcut  # noqa: E402
@@ -41,6 +42,7 @@ from tuxtoys.modules.crosshairs import options as crosshairs  # noqa: E402
 from tuxtoys.modules.findmymouse import options as findmymouse  # noqa: E402
 from tuxtoys.modules.mousehighlighter import options as highlighter  # noqa: E402
 from tuxtoys.modules.mousejump import options as mousejump  # noqa: E402
+from tuxtoys.modules.mousejump.layout import STYLES as JUMP_STYLES  # noqa: E402
 from tuxtoys.settings.alwaysontop_page import AppsRow, ColorRow, SliderRow  # noqa: E402
 from tuxtoys.settings.awake_page import SAVE_AFTER_MS  # noqa: E402
 from tuxtoys.settings.colorpicker_page import keys_label  # noqa: E402
@@ -107,6 +109,64 @@ def preview_styles() -> list[tuple[str, str]]:
         ("compact", _("Compact")),
         # TRANSLATORS: Mouse Jump's preview style with a dark frame round each screen.
         ("bezelled", _("Bezelled")),
+        # TRANSLATORS: Mouse Jump's preview style drawn with the settings below it.
+        ("custom", _("Custom")),
+    ]
+
+
+def custom_rows() -> list[tuple[str, str, str]]:
+    """The custom style's settings, as PowerToys' page has them: key, label, what it is.
+    A key ending in "color", "1" or "2" is a color; the others are numbers of pixels.
+    """
+    return [
+        (
+            "custom_color1",
+            _("Background color 1"),
+            _("Where the preview's background gradient starts."),
+        ),
+        (
+            "custom_color2",
+            _("Background color 2"),
+            _("Where the preview's background gradient ends."),
+        ),
+        ("custom_border", _("Border thickness"), _("Of the border round the preview, in pixels.")),
+        ("custom_border_color", _("Border color"), _("Of the border round the preview.")),
+        (
+            "custom_border_depth",
+            _("Border 3D depth"),
+            _("How much of the preview's border is drawn raised, in pixels."),
+        ),
+        (
+            "custom_padding",
+            _("Border padding"),
+            _("Between the preview's border and the screens' pictures, in pixels."),
+        ),
+        (
+            "custom_bezel",
+            _("Bezel thickness"),
+            _("Of the border round each screen's picture, in pixels."),
+        ),
+        ("custom_bezel_color", _("Bezel color"), _("Of the border round each screen's picture.")),
+        (
+            "custom_bezel_depth",
+            _("Bezel 3D depth"),
+            _("How much of each bezel is drawn raised, in pixels."),
+        ),
+        (
+            "custom_margin",
+            _("Screen margin"),
+            _("The gap between the screens' pictures, in pixels."),
+        ),
+        (
+            "custom_screen1",
+            _("Screen color 1"),
+            _("Where the gradient behind each screen's picture starts."),
+        ),
+        (
+            "custom_screen2",
+            _("Screen color 2"),
+            _("Where the gradient behind each screen's picture ends."),
+        ),
     ]
 
 
@@ -830,9 +890,36 @@ class MouseJumpPart(MousePart):
         self.height.content_widget.connect("value-changed", self._on_number, "height")
         self.look_section.add_row(self.height)
         self.style = ComboBox(_("Preview style"), preview_styles())
+        with_detail(self.style, _("One of the two ready-made styles, or a custom one."))
         self.style.content_widget.connect("changed", self._on_choice, "style")
         self.look_section.add_row(self.style)
+        self.copy_revealer = self.look_section.add_reveal_row(
+            Button(_("Copy to the custom preview style"), lambda *_a: self._copy_to_custom())
+        )
+        self.custom: dict[str, SettingsWidget] = {}
+        self.custom_revealers = []
+        for key, label, detail in custom_rows():
+            if key.endswith(("color", "1", "2")):
+                row = ColorRow(label)
+                row.content_widget.connect("color-set", self._on_custom_color, key)
+                with_detail(row, detail)
+            else:
+                row = number_row(label, detail, mousejump.SIZE)
+                row.content_widget.connect("value-changed", self._on_number, key)
+            self.custom[key] = row
+            self.custom_revealers.append(self.look_section.add_reveal_row(row))
         self.sections = (self.keys_section, self.look_section)
+
+    def _on_custom_color(self, button: Gtk.ColorButton, key: str) -> None:
+        self._save({key: to_hex(button.get_rgba())[:7]})
+
+    def _copy_to_custom(self) -> None:
+        """PowerToys' "Copy to custom preview style": the chosen style's parts into the
+        custom one, which is then chosen.
+        """
+        chosen = self._shown.get("style")
+        if chosen in JUMP_STYLES:
+            self._save({**mousejump.custom_from(JUMP_STYLES[chosen]), "style": "custom"})
 
     def show_settings(self, settings: object) -> None:
         if not isinstance(settings, Mapping):
@@ -850,6 +937,19 @@ class MouseJumpPart(MousePart):
             self.width.content_widget.set_value(options.width)
             self.height.content_widget.set_value(options.height)
             self.style.content_widget.set_active_id(options.style)
+            custom = options.style == "custom"
+            self.copy_revealer.set_reveal_child(not custom)
+            for revealer in self.custom_revealers:
+                revealer.set_reveal_child(custom)
+            for key, row in self.custom.items():
+                value = getattr(options, key)
+                if isinstance(row, ColorRow):
+                    if not value:  # the theme's highlight color
+                        red, green, blue = theme_accent()
+                        value = "#" + "".join(f"{round(c * 255):02x}" for c in (red, green, blue))
+                    row.content_widget.set_rgba(from_hex(value + "ff"))
+                else:
+                    row.content_widget.set_value(value)
         finally:
             self._loading = False
 

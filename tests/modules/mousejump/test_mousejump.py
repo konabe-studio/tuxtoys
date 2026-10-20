@@ -5,7 +5,7 @@ import pytest
 from tuxtoys.modules.base import Context
 from tuxtoys.modules.mousejump.layout import STYLES, jump_by_key, jump_to, layout
 from tuxtoys.modules.mousejump.module import MouseJump
-from tuxtoys.modules.mousejump.options import Options
+from tuxtoys.modules.mousejump.options import Options, custom_from
 from tuxtoys.modules.mouseutilities.helper import MouseHelper
 
 ONE = [(0, 0, 1280, 800)]
@@ -25,9 +25,9 @@ def test_bad_settings_are_refused(change: dict[str, object]) -> None:
 
 def test_the_styles_are_powertoys() -> None:
     compact, bezelled = STYLES["compact"], STYLES["bezelled"]
-    assert (compact.canvas_border, compact.canvas_padding, compact.screen_border) == (6, 0, 0)
-    assert (bezelled.canvas_padding, bezelled.screen_margin) == (4, 4)
-    assert (bezelled.screen_border, bezelled.screen_depth) == (12, 4)
+    assert (compact.border, compact.padding, compact.bezel) == (6, 0, 0)
+    assert (bezelled.padding, bezelled.margin) == (4, 4)
+    assert (bezelled.bezel, bezelled.bezel_depth) == (12, 4)
 
 
 def test_one_monitor_fills_the_preview_as_large_as_the_monitor_lets_it() -> None:
@@ -136,3 +136,29 @@ def test_the_module_keeps_its_shortcut_and_shares_the_helper() -> None:
     module.disable()
     module.switched_off()
     assert bindings.customs == []
+
+
+def test_the_custom_style_starts_as_bezelled_and_draws_from_its_settings() -> None:
+    options = Options()
+    assert Options(style="custom").preview_style() == STYLES["bezelled"]
+    custom = options.update(
+        {"style": "custom", "custom_bezel": 20, "custom_bezel_color": "#FF0000"}
+    )
+    style = custom.preview_style()
+    assert (style.bezel, style.bezel_color) == (20, "#ff0000")
+    assert options.preview_style() == STYLES["bezelled"]
+
+
+def test_copying_a_style_to_the_custom_one() -> None:
+    copied = custom_from(STYLES["compact"])
+    assert copied["custom_bezel"] == 0
+    assert copied["custom_border_color"] == ""
+    assert Options().update({**copied, "style": "custom"}).preview_style() == STYLES["compact"]
+
+
+@pytest.mark.parametrize(
+    "change", [{"custom_border": 101}, {"custom_bezel_color": ""}, {"custom_screen1": "blue"}]
+)
+def test_bad_custom_settings_are_refused(change: dict[str, object]) -> None:
+    with pytest.raises(ValueError, match=r"\S"):
+        Options().update(change)
