@@ -91,3 +91,20 @@ def scroll_passes_through(root: Gtk.Widget) -> None:
     if isinstance(root, Gtk.Container):
         for child in root.get_children():
             scroll_passes_through(child)
+
+
+def wrap_descriptions(root: Gtk.Widget) -> None:
+    """Lets the dimmed lines under `root` wrap: python3-xapp's sections set their subtitle
+    without wrapping, so the longest one held the window at its width, and it could not be
+    made narrower. Safe to call again as rows come and go.
+    """
+    if (
+        isinstance(root, Gtk.Label)
+        and root.get_style_context().has_class("dim-label")
+        and not root.get_line_wrap()
+    ):
+        root.set_line_wrap(True)
+        root.set_xalign(0)
+    if isinstance(root, Gtk.Container):
+        for child in root.get_children():
+            wrap_descriptions(child)
