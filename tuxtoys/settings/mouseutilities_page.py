@@ -1030,12 +1030,21 @@ class MouseUtilitiesPage(SettingsPage):
         if part is None:
             return
 
+        tries = [20]
+
         def scroll() -> bool:
             scroller = self.get_ancestor(Gtk.ScrolledWindow)
+            # Not laid out yet, as before the window is shown: look again, a few times.
+            adjustment = scroller.get_vadjustment() if scroller is not None else None
+            if adjustment is not None and adjustment.get_upper() <= adjustment.get_page_size():
+                tries[0] -= 1
+                return GLib.SOURCE_CONTINUE if tries[0] > 0 else GLib.SOURCE_REMOVE
             if scroller is not None:
                 found = part.first.translate_coordinates(self, 0, 0)
                 if found is not None:
                     scroller.get_vadjustment().set_value(max(found[1] - 12, 0))
             return GLib.SOURCE_REMOVE
 
-        GLib.idle_add(scroll)
+        # After GTK has laid the page out: scrolled at once, as the window opens on a tool's
+        # page, the parts are not where they will be. Looked at every 50 ms, for a second.
+        GLib.timeout_add(50, scroll)
