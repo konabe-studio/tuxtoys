@@ -49,6 +49,11 @@ class Spotlight(Gtk.Window):
         self.input_shape_combine_region(cairo.Region())
         self.connect("draw", self._on_draw)
 
+    def configure(self, options: Options, animations: bool = True) -> None:
+        self.options = options
+        self.duration = options.duration if animations else 0
+        self.queue_draw()
+
     def show_at(self, pointer: tuple[int, int]) -> None:
         self.pointer = pointer
         if not self.get_visible():

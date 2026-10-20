@@ -23,6 +23,10 @@ class FakeProcess:
         return 0
 
 
+def refuse(_tool: str, _settings: object) -> bool:
+    return False
+
+
 def sent(process: FakeProcess) -> dict[str, dict]:
     command = process.command
     return tool_settings(
@@ -32,7 +36,9 @@ def sent(process: FakeProcess) -> dict[str, dict]:
 
 def test_one_process_serves_every_tool_and_starts_again_on_a_change() -> None:
     started: list[FakeProcess] = []
-    helper = MouseHelper(lambda command: started.append(FakeProcess(command)) or started[-1])
+    helper = MouseHelper(
+        lambda command: started.append(FakeProcess(command)) or started[-1], refuse
+    )
     helper.set_tool("findmymouse", {"radius": 50})
     assert len(started) == 1
     assert sent(started[0]) == {"findmymouse": {"radius": 50}}
@@ -48,7 +54,9 @@ def test_one_process_serves_every_tool_and_starts_again_on_a_change() -> None:
 
 def test_a_helper_that_died_is_started_again() -> None:
     started: list[FakeProcess] = []
-    helper = MouseHelper(lambda command: started.append(FakeProcess(command)) or started[-1])
+    helper = MouseHelper(
+        lambda command: started.append(FakeProcess(command)) or started[-1], refuse
+    )
     helper.set_tool("findmymouse", {})
     started[0].stopped = True
     helper.set_tool("findmymouse", {})
@@ -57,7 +65,9 @@ def test_a_helper_that_died_is_started_again() -> None:
 
 def test_with_no_tool_on_nothing_starts() -> None:
     started: list[FakeProcess] = []
-    helper = MouseHelper(lambda command: started.append(FakeProcess(command)) or started[-1])
+    helper = MouseHelper(
+        lambda command: started.append(FakeProcess(command)) or started[-1], refuse
+    )
     helper.set_tool("findmymouse", None)
     assert started == []
 
@@ -73,3 +83,18 @@ def test_the_helper_refuses_a_tool_it_does_not_know() -> None:
         tool_settings(["nonsense={}"])
     with pytest.raises(ValueError, match="not a JSON object"):
         tool_settings(["findmymouse=[]"])
+
+
+def test_new_settings_go_to_the_running_helper_without_a_restart() -> None:
+    started: list[FakeProcess] = []
+    handed: list[tuple[str, object]] = []
+    helper = MouseHelper(
+        lambda command: started.append(FakeProcess(command)) or started[-1],
+        lambda tool, settings: handed.append((tool, settings)) or True,
+    )
+    helper.set_tool("findmymouse", {"radius": 50})
+    helper.set_tool("findmymouse", {"radius": 80})
+    assert len(started) == 1
+    assert handed == [("findmymouse", {"radius": 80})]
+    helper.set_tool("mousehighlighter", {})  # a tool coming on starts it again
+    assert len(started) == 2

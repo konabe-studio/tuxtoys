@@ -164,7 +164,9 @@ class FakeProcess:
 
 def test_the_module_hands_the_helper_its_settings_while_on() -> None:
     started: list[FakeProcess] = []
-    helper = MouseHelper(lambda command: started.append(FakeProcess(command)) or started[-1])
+    helper = MouseHelper(
+        lambda command: started.append(FakeProcess(command)) or started[-1], lambda *_: True
+    )
     module = FindMyMouse(FakeKeybindings, helper)
     module.enable(Context(None, FindMyMouse.read_settings({})))
     assert helper.tools["findmymouse"]["activation"] == "ctrl-left"
@@ -177,7 +179,7 @@ def test_the_module_hands_the_helper_its_settings_while_on() -> None:
 
 def test_the_shortcut_is_kept_only_for_the_shortcut_activation() -> None:
     bindings = FakeKeybindings()
-    module = FindMyMouse(lambda: bindings, MouseHelper(FakeProcess))
+    module = FindMyMouse(lambda: bindings, MouseHelper(FakeProcess, lambda *_: True))
     module.enable(Context(None, FindMyMouse.read_settings({})))
     assert bindings.customs == []
     module.apply_settings(Options(activation="shortcut").settings())

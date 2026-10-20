@@ -21,6 +21,10 @@ INTERFACE_XML = """
   <interface name="{interface}">
     <method name="FindMouse"/>
     <method name="ToggleHighlighter"/>
+    <method name="Configure">
+      <arg name="tool" type="s" direction="in"/>
+      <arg name="settings" type="s" direction="in"/>
+    </method>
   </interface>
 </node>
 """
@@ -97,11 +101,34 @@ def main(argv: list[str] | None = None) -> int:
             log.exception("stopped watching the mouse")
 
     def on_call(*arguments: Any) -> None:  # noqa: ANN401, Gio's method call arguments
-        method, invocation = arguments[4], arguments[6]
+        method, parameters, invocation = arguments[4], arguments[5], arguments[6]
+        if method == "Configure":
+            configure(*parameters.unpack(), invocation)
+            return
         if method == "FindMouse" and "findmymouse" in running:
             running["findmymouse"].toggle()
         elif method == "ToggleHighlighter" and "mousehighlighter" in running:
             running["mousehighlighter"].toggle()
+        invocation.return_value(None)
+
+    def configure(tool_id: str, settings: str, invocation: Any) -> None:  # noqa: ANN401
+        """A running tool's new settings; one that is not running is the daemon's to start."""
+        try:
+            found = tool_settings([f"{tool_id}={settings}"])
+        except ValueError as error:
+            invocation.return_dbus_error("org.freedesktop.DBus.Error.InvalidArgs", str(error))
+            return
+        if tool_id not in running:
+            invocation.return_dbus_error("org.freedesktop.DBus.Error.Failed", "not running")
+            return
+        if tool_id == "findmymouse":
+            from tuxtoys.modules.findmymouse.options import Options
+
+            running[tool_id].configure(Options.read(found[tool_id]))
+        else:
+            from tuxtoys.modules.mousehighlighter.options import Options as HighlighterOptions
+
+            running[tool_id].configure(HighlighterOptions.read(found[tool_id]))
         invocation.return_value(None)
 
     def on_bus(connection: Any, _name: str) -> None:  # noqa: ANN401, a Gio.DBusConnection
