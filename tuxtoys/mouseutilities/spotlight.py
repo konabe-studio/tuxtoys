@@ -3,6 +3,10 @@ which follows it. A window over every monitor that takes no input, so every clic
 through to what is under it, as PowerToys' does. It fades in while the circle closes in from
 `zoom` times its radius, and fades out when put away; at once while Cinnamon has its
 animations off.
+
+It moves with the screen's frames: once a frame it asks where the pointer is and redraws
+only the squares the circle leaves and enters, not the whole screen, so a quick mouse does
+not leave it behind.
 """
 
 import math
@@ -18,7 +22,8 @@ from gi.repository import Gdk, GLib, Gtk  # noqa: E402
 from tuxtoys.modules.findmymouse.options import Options, rgba  # noqa: E402
 from tuxtoys.modules.findmymouse.sonar import radius_at  # noqa: E402
 
-FRAME_MS = 16
+# Room around the circle for its smoothed edge.
+EDGE = 3
 
 
 class Spotlight(Gtk.Window):
@@ -32,7 +37,7 @@ class Spotlight(Gtk.Window):
         self._target = 0.0
         self._from = 0.0
         self._started = 0
-        self._timer = 0
+        self._tick = 0
         visual = self.get_screen().get_rgba_visual()
         if visual is not None:
             self.set_visual(visual)
@@ -57,11 +62,6 @@ class Spotlight(Gtk.Window):
             window.raise_()
         self._head_for(1.0)
 
-    def move_to(self, pointer: tuple[int, int]) -> None:
-        if pointer != self.pointer:
-            self.pointer = pointer
-            self.queue_draw()
-
     def put_away(self) -> None:
         self._head_for(0.0)
 
@@ -69,40 +69,63 @@ class Spotlight(Gtk.Window):
         self._target, self._from = target, self.progress
         self._started = GLib.get_monotonic_time() // 1000
         if not self.duration:
-            self._set(target)
+            self.progress = target
+        if target == 0.0 and not self.duration:
+            self._hide()
             return
-        if not self._timer:
-            self._timer = GLib.timeout_add(FRAME_MS, self._step)
+        self.queue_draw()
+        if not self._tick:
+            self._tick = self.add_tick_callback(self._on_tick)
 
-    def _step(self) -> bool:
-        elapsed = GLib.get_monotonic_time() // 1000 - self._started
-        done = min(elapsed / self.duration, 1.0)
-        self._set(self._from + (self._target - self._from) * done)
-        if done >= 1.0:
-            self._timer = 0
-            return GLib.SOURCE_REMOVE
+    def _hide(self) -> None:
+        if self._tick:
+            self.remove_tick_callback(self._tick)
+            self._tick = 0
+        self.progress = 0.0
+        self.hide()
+
+    def _where(self) -> tuple[int, int]:
+        display = Gdk.Display.get_default()
+        if display is None:
+            return self.pointer
+        _screen, x, y = display.get_default_seat().get_pointer().get_position()
+        return x, y
+
+    def _on_tick(self, _widget: Gtk.Widget, _clock: Gdk.FrameClock) -> bool:
+        if self.progress != self._target:
+            elapsed = GLib.get_monotonic_time() // 1000 - self._started
+            done = min(elapsed / self.duration, 1.0) if self.duration else 1.0
+            self.progress = self._from + (self._target - self._from) * done
+            if self._target == 0.0 and done >= 1.0:
+                self._tick = 0
+                self.progress = 0.0
+                self.hide()
+                return GLib.SOURCE_REMOVE
+            # The fade changes the whole screen.
+            self.pointer = self._where()
+            self.queue_draw()
+            return GLib.SOURCE_CONTINUE
+        pointer = self._where()
+        if pointer != self.pointer:
+            self._redraw_around(self.pointer)
+            self.pointer = pointer
+            self._redraw_around(pointer)
         return GLib.SOURCE_CONTINUE
 
-    def _set(self, progress: float) -> None:
-        self.progress = progress
-        if progress <= 0.01 and self._target == 0.0:
-            self.progress = 0.0
-            self.hide()
-        else:
-            self.queue_draw()
+    def _redraw_around(self, pointer: tuple[int, int]) -> None:
+        radius = math.ceil(radius_at(self.options, self.progress)) + EDGE
+        x, y = pointer
+        self.queue_draw_area(x - radius, y - radius, 2 * radius, 2 * radius)
 
     def _on_draw(self, _window: Gtk.Window, context: cairo.Context) -> bool:
+        # Drawn straight, without a group: GTK has clipped it to the squares that changed.
         context.set_operator(cairo.OPERATOR_SOURCE)
-        context.set_source_rgba(0, 0, 0, 0)
-        context.paint()
-        context.push_group()
-        context.set_source_rgba(*rgba(self.options.background))
+        red, green, blue, alpha = rgba(self.options.background)
+        context.set_source_rgba(red, green, blue, alpha * self.progress)
         context.paint()
         x, y = self.pointer
         context.arc(x, y, radius_at(self.options, self.progress), 0, 2 * math.pi)
-        context.set_source_rgba(*rgba(self.options.spotlight))
+        red, green, blue, alpha = rgba(self.options.spotlight)
+        context.set_source_rgba(red, green, blue, alpha * self.progress)
         context.fill()
-        context.pop_group_to_source()
-        context.set_operator(cairo.OPERATOR_OVER)
-        context.paint_with_alpha(self.progress)
         return True

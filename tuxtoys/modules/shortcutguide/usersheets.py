@@ -157,9 +157,10 @@ def path_of(sheet: Sheet, directory: Path) -> Path:
     return directory / (sheet.id.removeprefix(PREFIX) + SUFFIX)
 
 
-def load(directory: Path) -> tuple[list[Sheet], list[Problem]]:
+def load(directory: Path, log_problems: bool = True) -> tuple[list[Sheet], list[Problem]]:
     """Every sheet in the folder, in the order of their file names, and the files that
-    could not be read. A missing folder has none.
+    could not be read, logged unless the caller shows them itself. A missing folder has
+    none.
     """
     sheets: list[Sheet] = []
     problems: list[Problem] = []
@@ -175,7 +176,8 @@ def load(directory: Path) -> tuple[list[Sheet], list[Problem]]:
                 raise ValueError("too large")
             sheets.append(parse(path.read_text(encoding="utf-8"), sheet_id(path)))
         except (OSError, ValueError) as error:  # UnicodeDecodeError is a ValueError
-            log.warning("Shortcut Guide skipped %s: %s", path, error)
+            if log_problems:
+                log.warning("Shortcut Guide skipped %s: %s", path, error)
             problems.append(Problem(path, str(error)))
     return sheets, problems
 

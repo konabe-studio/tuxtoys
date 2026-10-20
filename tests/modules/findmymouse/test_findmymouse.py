@@ -11,7 +11,7 @@ from tuxtoys.modules.findmymouse.options import Options, rgba
 from tuxtoys.modules.findmymouse.sonar import IDLE_MS, Action, Sonar, radius_at
 
 
-def test_the_defaults_are_powertoys() -> None:
+def test_the_defaults_are_powertoys_but_quicker() -> None:
     options = Options()
     assert options.activation == "ctrl-left"
     assert (options.shake_distance, options.shake_interval, options.shake_factor) == (
@@ -19,7 +19,7 @@ def test_the_defaults_are_powertoys() -> None:
         1000,
         400,
     )
-    assert (options.radius, options.zoom, options.duration) == (100, 9, 500)
+    assert (options.radius, options.zoom, options.duration) == (50, 5, 250)
     assert rgba(options.background) == (0.0, 0.0, 0.0, 128 / 255)
     assert rgba(options.spotlight) == (1.0, 1.0, 1.0, 128 / 255)
 
@@ -45,7 +45,7 @@ def test_bad_settings_are_refused(change: dict[str, object]) -> None:
 
 def test_a_bad_value_in_the_config_falls_back_to_its_default() -> None:
     options = Options.read({"radius": "big", "zoom": 4, "background": "#FF000040"})
-    assert options.radius == 100
+    assert options.radius == 50
     assert options.zoom == 4
     assert options.background == "#ff000040"
 

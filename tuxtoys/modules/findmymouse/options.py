@@ -1,6 +1,7 @@
 """Find My Mouse's settings, read and checked without GTK or D-Bus, with PowerToys' defaults
-(FindMyMouse.h): how it starts, the shake it watches for, when it holds back, and how the
-spotlight looks.
+(FindMyMouse.h) but for the spotlight's size and speed: PowerToys' radius 100, zoom 9 and
+500 ms came in too slowly on Mint, so it is 50, 5 and 250 ms here. They say how it starts,
+the shake it watches for, when it holds back, and how the spotlight looks.
 
 Colors are "#rrggbbaa", the last two digits their opacity: PowerToys keeps the backdrop's
 opacity in its color the same way, 128 of 255 by default.
@@ -44,11 +45,11 @@ class Options:
     skip_gamemode: bool = True
     background: str = "#00000080"
     spotlight: str = "#ffffff80"
-    radius: int = 100
+    radius: int = 50
     # How many times the radius the spotlight starts at, closing in to it.
-    zoom: int = 9
+    zoom: int = 5
     # Milliseconds; nothing moves while Cinnamon has its animations off.
-    duration: int = 500
+    duration: int = 250
     # Applications it does not start over, by WM_CLASS, one per line.
     excluded: str = ""
 

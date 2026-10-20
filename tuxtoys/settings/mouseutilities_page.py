@@ -106,7 +106,6 @@ class Notice(SettingsWidget):
         go = Gtk.Button(label=button, valign=Gtk.Align.CENTER)
         go.connect("clicked", lambda _button: action())
         self.pack_end(go, False, False, 0)
-        self.set_no_show_all(True)
 
 
 class MouseUtilitiesPage(SettingsPage):
@@ -161,8 +160,9 @@ class MouseUtilitiesPage(SettingsPage):
             _("Mouse settings"),
             lambda: open_cinnamon_settings("mouse", show_error),
         )
-        self.activation_section.add_row(self.locate_notice)
+        self.locate_revealer = self.activation_section.add_reveal_row(self.locate_notice)
         self.shake_rows = []
+        self.shake_revealers = []
         for key, label, detail, limits in (
             (
                 "shake_distance",
@@ -189,19 +189,16 @@ class MouseUtilitiesPage(SettingsPage):
             row = NumberRow(label, detail, limits[1])
             row.content_widget.set_range(*limits)
             row.content_widget.connect("value-changed", self._on_number, key)
-            row.set_no_show_all(True)
-            self.activation_section.add_row(row)
+            self.shake_revealers.append(self.activation_section.add_reveal_row(row))
             self.shake_rows.append(row)
         keys = Text("")
-        keys.set_no_show_all(True)
         self.keys_row = keys
         self.keys = keys.content_widget
-        self.activation_section.add_row(keys)
+        self.keys_revealer = self.activation_section.add_reveal_row(keys)
         self.keyboard_button = Button(
             _("Open the Keyboard settings"), lambda *_a: open_keyboard_settings(show_error)
         )
-        self.keyboard_button.set_no_show_all(True)
-        self.activation_section.add_row(self.keyboard_button)
+        self.keyboard_revealer = self.activation_section.add_reveal_row(self.keyboard_button)
         self.skip_fullscreen = Switch(_("Not over a full-screen window"))
         with_detail(self.skip_fullscreen, _("Such as a game, a video or a presentation."))
         self.skip_fullscreen.content_widget.connect(
@@ -245,7 +242,7 @@ class MouseUtilitiesPage(SettingsPage):
             _("Effects settings"),
             lambda: open_cinnamon_settings("effects", show_error),
         )
-        self.look_section.add_row(self.animations_notice)
+        self.animations_revealer = self.look_section.add_reveal_row(self.animations_notice)
 
         self.excluded_section = self.add_section(
             _("Excluded applications"),
@@ -339,19 +336,19 @@ class MouseUtilitiesPage(SettingsPage):
             self._show_activation(options.activation)
             animations = self._flag(INTERFACE_SCHEMA, "enable-animations", True)
             self.duration.set_sensitive(animations)
-            self.animations_notice.set_visible(not animations)
+            self.animations_revealer.set_reveal_child(not animations)
         finally:
             self._loading = False
 
     def _show_activation(self, activation: str) -> None:
-        for row in self.shake_rows:
-            row.set_visible(activation == "shake")
+        for revealer in self.shake_revealers:
+            revealer.set_reveal_child(activation == "shake")
         by_shortcut = activation == "shortcut"
         self.keys.set_text(self._keys_text() if by_shortcut else "")
-        self.keys_row.set_visible(by_shortcut)
-        self.keyboard_button.set_visible(by_shortcut)
+        self.keys_revealer.set_reveal_child(by_shortcut)
+        self.keyboard_revealer.set_reveal_child(by_shortcut)
         locator = self._flag(MOUSE_SCHEMA, "locate-pointer", False)
-        self.locate_notice.set_visible(activation == "ctrl-left" and locator)
+        self.locate_revealer.set_reveal_child(activation == "ctrl-left" and locator)
 
     def _keys_text(self) -> str:
         """The keys as the Keyboard settings name them, or why there are none."""

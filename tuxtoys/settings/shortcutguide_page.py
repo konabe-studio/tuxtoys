@@ -224,7 +224,7 @@ class ShortcutGuidePage(SimplePage):
 
     def show_sheets(self) -> None:
         """The lists in the folder as they are now, and the files that are not lists."""
-        self._sheets, problems = usersheets.load(self._folder)
+        self._sheets, problems = usersheets.load(self._folder, log_problems=False)
         for child in self.sheets_list.get_children():
             child.destroy()
         for sheet in self._sheets:
