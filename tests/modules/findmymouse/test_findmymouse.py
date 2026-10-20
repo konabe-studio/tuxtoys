@@ -1,14 +1,13 @@
-import json
 from dataclasses import dataclass, field
-from pathlib import Path
 
 import pytest
 
 from tuxtoys.inputwatch.detect import ButtonEvent, Key, KeyEvent, Motion
 from tuxtoys.modules.base import Context
-from tuxtoys.modules.findmymouse.module import FindMyMouse, helper_command
+from tuxtoys.modules.findmymouse.module import FindMyMouse
 from tuxtoys.modules.findmymouse.options import Options, rgba
 from tuxtoys.modules.findmymouse.sonar import IDLE_MS, Action, Sonar, radius_at
+from tuxtoys.modules.mouseutilities.helper import MouseHelper
 
 
 def test_the_defaults_are_powertoys_but_quicker() -> None:
@@ -149,7 +148,7 @@ class FakeKeybindings:
 
 
 @dataclass
-class FakeHelper:
+class FakeProcess:
     command: list[str]
     stopped: bool = False
 
@@ -163,27 +162,22 @@ class FakeHelper:
         return 0
 
 
-def test_the_helper_runs_while_on_with_the_settings() -> None:
-    started: list[FakeHelper] = []
-    module = FindMyMouse(
-        FakeKeybindings, lambda command: started.append(FakeHelper(command)) or started[-1]
-    )
+def test_the_module_hands_the_helper_its_settings_while_on() -> None:
+    started: list[FakeProcess] = []
+    helper = MouseHelper(lambda command: started.append(FakeProcess(command)) or started[-1])
+    module = FindMyMouse(FakeKeybindings, helper)
     module.enable(Context(None, FindMyMouse.read_settings({})))
+    assert helper.tools["findmymouse"]["activation"] == "ctrl-left"
     assert len(started) == 1
-    sent = json.loads(started[0].command[started[0].command.index("--findmymouse") + 1])
-    assert sent["activation"] == "ctrl-left"
-    module.apply_settings(Options().settings())
-    assert len(started) == 1  # nothing changed
     module.apply_settings(Options(radius=150).settings())
-    assert len(started) == 2
-    assert started[0].stopped
+    assert helper.tools["findmymouse"]["radius"] == 150
     module.disable()
-    assert started[1].stopped
+    assert helper.tools == {}
 
 
 def test_the_shortcut_is_kept_only_for_the_shortcut_activation() -> None:
     bindings = FakeKeybindings()
-    module = FindMyMouse(lambda: bindings, FakeHelper)
+    module = FindMyMouse(lambda: bindings, MouseHelper(FakeProcess))
     module.enable(Context(None, FindMyMouse.read_settings({})))
     assert bindings.customs == []
     module.apply_settings(Options(activation="shortcut").settings())
@@ -194,11 +188,6 @@ def test_the_shortcut_is_kept_only_for_the_shortcut_activation() -> None:
     assert len(bindings.customs) == 1
     module.switched_off()
     assert bindings.customs == []
-
-
-def test_from_a_checkout_the_helper_is_the_module(tmp_path: Path) -> None:
-    command = helper_command(Options(), tmp_path)
-    assert command[1:3] == ["-m", "tuxtoys.mouseutilities"]
 
 
 def test_ctrl_twice_works_again_after_the_spotlight() -> None:
