@@ -13,6 +13,7 @@
     tuxtoys textextractor
     tuxtoys shortcutguide
     tuxtoys findmymouse
+    tuxtoys mousehighlighter
     tuxtoys modules [list | enable MODULE | disable MODULE]
 
 Exit status: 0 when done, 1 when TuxToys could not do it, 2 when the command line is wrong.
@@ -44,6 +45,7 @@ class Client(Protocol):
     def lightswitch_state(self) -> dict: ...
     def lightswitch_toggle(self) -> None: ...
     def find_mouse(self) -> None: ...
+    def toggle_highlighter(self) -> None: ...
 
 
 def main(
@@ -69,6 +71,8 @@ def main(
             run_lightswitch(client, args, out)
         elif args.command == "findmymouse":
             run_findmymouse(client)
+        elif args.command == "mousehighlighter":
+            run_mousehighlighter(client)
         elif args.command in (
             "hosts",
             "env",
@@ -105,6 +109,9 @@ def main(
         elif args.command == "textextractor":
             print(_("Text Extractor is switched off in TuxToys."), file=err)
             print(_("Switch it on with: tuxtoys modules enable textextractor"), file=err)
+        elif args.command == "mousehighlighter":
+            print(_("Mouse Highlighter is switched off in TuxToys."), file=err)
+            print(_("Switch it on with: tuxtoys modules enable mousehighlighter"), file=err)
         elif args.command == "findmymouse":
             print(_("Find My Mouse is switched off in TuxToys."), file=err)
             print(_("Switch it on with: tuxtoys modules enable findmymouse"), file=err)
@@ -153,6 +160,15 @@ def run_findmymouse(client: Client) -> None:
     if not any(info.id == "findmymouse" and info.state == "on" for info in client.modules()):
         raise ModuleOff
     client.find_mouse()
+
+
+def run_mousehighlighter(client: Client) -> None:
+    """Turns Mouse Highlighter's highlighting on or off, as its shortcut does, while it
+    is switched on.
+    """
+    if not any(info.id == "mousehighlighter" and info.state == "on" for info in client.modules()):
+        raise ModuleOff
+    client.toggle_highlighter()
 
 
 def run_window(client: Client, command: str, spawn: Callable[[list[str]], None]) -> None:
@@ -336,6 +352,11 @@ def parser() -> argparse.ArgumentParser:
         description=_(
             "Shine Find My Mouse's spotlight on the pointer, or put it away when it is showing."
         ),
+    )
+    commands.add_parser(
+        "mousehighlighter",
+        help=_("show your clicks, or stop showing them"),
+        description=_("Turn Mouse Highlighter's highlighting of your clicks on or off."),
     )
     commands.add_parser(
         "env",

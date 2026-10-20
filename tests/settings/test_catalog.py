@@ -26,6 +26,7 @@ def test_grouped_keeps_the_order_and_leaves_out_empty_headings() -> None:
         "textextractor",
         "shortcutguide",
         "findmymouse",
+        "mousehighlighter",
         "locksmith",
         "newplus",
         "imageresizer",

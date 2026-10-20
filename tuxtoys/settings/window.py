@@ -145,6 +145,7 @@ class SettingsWindow(Gtk.ApplicationWindow):
             "textextractor": self.textextractor,
             "shortcutguide": self.shortcutguide,
             "findmymouse": self.mouseutilities,
+            "mousehighlighter": self.mouseutilities,
         }
         pages = self.pages
         for heading, tools in catalog.grouped():
@@ -217,7 +218,12 @@ class SettingsWindow(Gtk.ApplicationWindow):
 
     def _on_settings_changed(self, module_id: str, settings: dict) -> None:
         page = self.pages.get(module_id)
-        if page is not None:
+        if page is None:
+            return
+        # A page tools share is told whose settings these are.
+        if hasattr(page, "show_module_settings"):
+            page.show_module_settings(module_id, settings)
+        else:
             page.show_settings(settings)
 
     def show_page(self, page: str) -> None:

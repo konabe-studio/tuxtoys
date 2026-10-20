@@ -150,6 +150,19 @@ second of stillness once you have moved the mouse.
   and nothing is kept or sent anywhere. Nothing is taken from other programs either:
   every key and click still reaches them.
 
+### Mouse Highlighter
+
+Press Super+Shift+H, and every click shows on the screen until you press it again:
+handy for recording the screen or showing something to others.
+
+- **Three styles, as in PowerToys:** a ripple going out from each click, a circle under
+  the pointer while a button is held, or the screen dimmed around the pointer.
+- **Each button its own color:** the left and the right, and one under the pointer the
+  rest of the time if you want it.
+- **On from the start,** if you would rather not press the shortcut.
+- It watches only the pointer and its buttons, with Find My Mouse's helper, and every
+  click still reaches what is under it.
+
 ### File Locksmith
 
 Right-click a file or folder in Nemo and choose **What is using this?** to see which of

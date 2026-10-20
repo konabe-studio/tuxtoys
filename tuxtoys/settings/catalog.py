@@ -40,6 +40,13 @@ TOOLS = (
     Tool("textextractor", "Text Extractor", "screen", f"{APP_ID}-textextractor-symbolic"),
     Tool("shortcutguide", "Shortcut Guide", "screen", "input-keyboard-symbolic"),
     Tool("findmymouse", "Find My Mouse", "input", "find-location-symbolic", "mouseutilities"),
+    Tool(
+        "mousehighlighter",
+        "Mouse Highlighter",
+        "input",
+        "input-mouse-symbolic",
+        "mouseutilities",
+    ),
 )
 
 
