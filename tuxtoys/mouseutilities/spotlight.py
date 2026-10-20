@@ -43,12 +43,11 @@ class Spotlight(Gtk.Window):
         self.move(0, 0)
         if root is not None:
             self.set_default_size(root.get_width(), root.get_height())
-        self.connect("realize", self._on_realize)
+        # No input region: the pointer and its clicks go to the windows below. Set on the
+        # widget, which GTK keeps; one set on its GdkWindow GTK takes back whenever the
+        # window is sized, and the window then swallowed clicks.
+        self.input_shape_combine_region(cairo.Region())
         self.connect("draw", self._on_draw)
-
-    def _on_realize(self, _window: Gtk.Window) -> None:
-        # No input region: the pointer and its clicks go to the windows below.
-        self.get_window().input_shape_combine_region(cairo.Region(), 0, 0)
 
     def show_at(self, pointer: tuple[int, int]) -> None:
         self.pointer = pointer
