@@ -26,6 +26,8 @@ LONG = " ".join(["A description much longer than any window would want to be."] 
 def test_a_section_s_description_wraps_and_the_page_can_be_narrow() -> None:
     page = SettingsPage()
     page.add_section("Title", LONG)
+    # A hidden widget asks for no width at all.
+    page.show_all()
     before = page.get_preferred_width().minimum_width
     wrap_descriptions(page)
     after = page.get_preferred_width().minimum_width
