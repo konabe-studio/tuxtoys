@@ -4,9 +4,9 @@ through to what is under it, as PowerToys' does. It fades in while the circle cl
 `zoom` times its radius, and fades out when put away; at once while Cinnamon has its
 animations off.
 
-It moves with the screen's frames: once a frame it asks where the pointer is and redraws
-only the squares the circle leaves and enters, not the whole screen, so a quick mouse does
-not leave it behind.
+It moves with the screen's frames: once a frame it asks where the pointer is and, when it
+has moved, draws the whole window again: redrawing only the squares around the circle
+showed their edges while the mouse moved fast.
 """
 
 import math
@@ -21,9 +21,6 @@ from gi.repository import Gdk, GLib, Gtk  # noqa: E402
 
 from tuxtoys.modules.findmymouse.options import Options, rgba  # noqa: E402
 from tuxtoys.modules.findmymouse.sonar import radius_at  # noqa: E402
-
-# Room around the circle for its smoothed edge.
-EDGE = 3
 
 
 class Spotlight(Gtk.Window):
@@ -107,18 +104,12 @@ class Spotlight(Gtk.Window):
             return GLib.SOURCE_CONTINUE
         pointer = self._where()
         if pointer != self.pointer:
-            self._redraw_around(self.pointer)
             self.pointer = pointer
-            self._redraw_around(pointer)
+            self.queue_draw()
         return GLib.SOURCE_CONTINUE
 
-    def _redraw_around(self, pointer: tuple[int, int]) -> None:
-        radius = math.ceil(radius_at(self.options, self.progress)) + EDGE
-        x, y = pointer
-        self.queue_draw_area(x - radius, y - radius, 2 * radius, 2 * radius)
-
     def _on_draw(self, _window: Gtk.Window, context: cairo.Context) -> bool:
-        # Drawn straight, without a group: GTK has clipped it to the squares that changed.
+        # Drawn straight, without a group, which is quicker.
         context.set_operator(cairo.OPERATOR_SOURCE)
         red, green, blue, alpha = rgba(self.options.background)
         context.set_source_rgba(red, green, blue, alpha * self.progress)
