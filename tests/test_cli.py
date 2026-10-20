@@ -73,6 +73,14 @@ class FakeClient:
         self._check()
         self.calls.append(("toggle_highlighter",))
 
+    def toggle_crosshairs(self) -> None:
+        self._check()
+        self.calls.append(("toggle_crosshairs",))
+
+    def glide_cursor(self) -> None:
+        self._check()
+        self.calls.append(("glide_cursor",))
+
     def lightswitch_toggle(self) -> None:
         self._check()
         self.calls.append(("lightswitch_toggle",))
@@ -431,3 +439,18 @@ class TestMouseHighlighter:
         assert status == 1
         assert "Mouse Highlighter is switched off in TuxToys." in err
         assert "tuxtoys modules enable mousehighlighter" in err
+
+
+class TestCrosshairs:
+    def test_toggles_and_glides_while_it_is_on(self, client: FakeClient) -> None:
+        client.infos = [AWAKE, ModuleInfo("crosshairs", "Mouse Pointer Crosshairs", "", "on", "")]
+        assert run(client, "crosshairs")[0] == 0
+        assert run(client, "glidingcursor")[0] == 0
+        assert client.calls == [("toggle_crosshairs",), ("glide_cursor",)]
+
+    def test_says_how_to_switch_it_on(self, client: FakeClient) -> None:
+        client.infos = [AWAKE]
+        status, _out, err = run(client, "glidingcursor")
+        assert status == 1
+        assert "Mouse Pointer Crosshairs is switched off in TuxToys." in err
+        assert "tuxtoys modules enable crosshairs" in err

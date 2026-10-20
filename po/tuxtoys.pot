@@ -3675,3 +3675,139 @@ msgstr ""
 #, python-brace-format
 msgid "{keys} is in use already. Give {tool} other keys in the Keyboard settings."
 msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Crosshairs color"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Crosshairs opacity (%)"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Crosshairs center radius (px)"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Crosshairs thickness (px)"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Crosshairs border color"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Crosshairs border size (px)"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Crosshairs orientation"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Vertical and horizontal lines"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Vertical only"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Horizontal only"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Hide the crosshairs while the pointer is hidden"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Fixed crosshairs length"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Each line as long as set, rather than to the screen's edge."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Crosshairs fixed length (px)"
+msgstr ""
+
+#: tuxtoys/modules/crosshairs/options.py tuxtoys/settings/mouseutilities_page.py
+msgid "Gliding cursor"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Places the pointer anywhere on the screen and clicks, with the keyboard alone. Press its shortcut to send a line across the screen, again to slow it, again to hold it and send a line down, again to slow that, and once more to click where they cross. Escape stops it."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Glide with a keyboard shortcut"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Initial speed"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "How fast the line moves as it starts out."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Reduced speed"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "How fast it moves once a second press has slowed it."
+msgstr ""
+
+#: tuxtoys/cli.py tuxtoys/modules/crosshairs/__init__.py tuxtoys/modules/crosshairs/drawing.py tuxtoys/modules/crosshairs/module.py tuxtoys/modules/crosshairs/options.py tuxtoys/mouseutilities/crosshairs.py tuxtoys/settings/catalog.py tuxtoys/settings/mouseutilities_page.py
+msgid "Mouse Pointer Crosshairs"
+msgstr ""
+
+#: tuxtoys/cli.py
+msgid "Mouse Pointer Crosshairs is switched off in TuxToys."
+msgstr ""
+
+#: tuxtoys/cli.py
+msgid "Switch it on with: tuxtoys modules enable crosshairs"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Change its keys in the Keyboard settings, under TuxToys: Mouse Pointer Crosshairs."
+msgstr ""
+
+#: tuxtoys/modules/crosshairs/module.py
+msgid "Draws crosshairs through the pointer with Super+Alt+P, and places it with the keyboard."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Draws crosshairs through the pointer. Its shortcut shows and hides them."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Show and hide them with a keyboard shortcut"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Shows them from login on, without the shortcut."
+msgstr ""
+
+#: tuxtoys/cli.py
+msgid "The gliding cursor's next step: start a line across the screen, slow it, turn to a line down the screen, slow it, and click where they cross."
+msgstr ""
+
+#: tuxtoys/cli.py
+msgid "Turn Mouse Pointer Crosshairs on or off."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Use Mouse Pointer Crosshairs"
+msgstr ""
+
+#: tuxtoys/cli.py
+msgid "place the pointer and click with the keyboard, one step a run"
+msgstr ""
+
+#: tuxtoys/cli.py
+msgid "show crosshairs through the pointer, or put them away"
+msgstr ""

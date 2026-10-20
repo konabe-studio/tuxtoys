@@ -9,6 +9,9 @@ Cinnamon has its animations off.
 
 Mouse Highlighter's part: its shortcut, whether it starts on, the mode, and the settings of
 the mode chosen, as PowerToys shows them.
+
+Mouse Pointer Crosshairs' part: its shortcut, whether it starts on, the crosshairs' look,
+and the gliding cursor's shortcut and speeds.
 """
 
 from collections.abc import Callable, Mapping
@@ -32,6 +35,7 @@ from xapp.SettingsWidgets import (  # noqa: E402
 from tuxtoys.api import ModuleInfo, ModuleOff, NotRunning, Refused  # noqa: E402
 from tuxtoys.core.i18n import _  # noqa: E402
 from tuxtoys.core.shortcut import CustomShortcut  # noqa: E402
+from tuxtoys.modules.crosshairs import options as crosshairs  # noqa: E402
 from tuxtoys.modules.findmymouse import options as findmymouse  # noqa: E402
 from tuxtoys.modules.mousehighlighter import options as highlighter  # noqa: E402
 from tuxtoys.settings.alwaysontop_page import AppsRow, ColorRow, SliderRow  # noqa: E402
@@ -83,6 +87,14 @@ def highlight_modes() -> list[tuple[str, str]]:
         ("circle", _("Circle highlight")),
         # TRANSLATORS: a Mouse Highlighter mode: a ring going out from each click.
         ("ripple", _("Ripple")),
+    ]
+
+
+def orientations() -> list[tuple[str, str]]:
+    return [
+        ("both", _("Vertical and horizontal lines")),
+        ("vertical", _("Vertical only")),
+        ("horizontal", _("Horizontal only")),
     ]
 
 
@@ -606,6 +618,162 @@ class HighlighterPart(MousePart):
             self._loading = False
 
 
+class CrosshairsPart(MousePart):
+    module_id = "crosshairs"
+
+    def __init__(
+        self,
+        page: SettingsPage,
+        client: Client,
+        show_error: Callable[[str], None],
+        shortcut: CustomShortcut,
+        glide_shortcut: CustomShortcut,
+    ) -> None:
+        super().__init__(page, client, show_error)
+        self._shortcut = shortcut
+        self._glide_shortcut = glide_shortcut
+        self.first = self.top(
+            _("Mouse Pointer Crosshairs"),
+            _("Draws crosshairs through the pointer. Its shortcut shows and hides them."),
+            _("Use Mouse Pointer Crosshairs"),
+        )
+
+        self.keys_section = page.add_section(
+            _("Activation"),
+            _("Change its keys in the Keyboard settings, under TuxToys: Mouse Pointer Crosshairs."),
+        )
+        self.shortcut = Switch(_("Show and hide them with a keyboard shortcut"))
+        self.shortcut.content_widget.connect("notify::active", self._on_flag, "shortcut")
+        self.keys_section.add_row(self.shortcut)
+        keys = Text("")
+        self.keys = keys.content_widget
+        self.keys_section.add_row(keys)
+        self.keys_section.add_row(
+            Button(_("Open the Keyboard settings"), lambda *_a: open_keyboard_settings(show_error))
+        )
+        self.auto_activate = Switch(_("On from the start"))
+        with_detail(self.auto_activate, _("Shows them from login on, without the shortcut."))
+        self.auto_activate.content_widget.connect("notify::active", self._on_flag, "auto_activate")
+        self.keys_section.add_row(self.auto_activate)
+
+        self.look_section = page.add_section(_("Appearance and behavior"))
+        self.color = ColorRow(_("Crosshairs color"))
+        self.color.content_widget.connect("color-set", self._on_plain_color, "color")
+        self.look_section.add_row(self.color)
+        self.opacity = SliderRow(_("Crosshairs opacity (%)"), *crosshairs.OPACITY, 5)
+        self.opacity.content_widget.connect("value-changed", self._on_slider, "opacity")
+        self.look_section.add_row(self.opacity)
+        self.numbers = {}
+        for key, label, limits in (
+            ("radius", _("Crosshairs center radius (px)"), crosshairs.RADIUS),
+            ("thickness", _("Crosshairs thickness (px)"), crosshairs.THICKNESS),
+        ):
+            row = NumberRow(label, "", limits[1])
+            row.content_widget.set_range(*limits)
+            row.content_widget.connect("value-changed", self._on_number, key)
+            self.look_section.add_row(row)
+            self.numbers[key] = row
+        self.border_color = ColorRow(_("Crosshairs border color"))
+        self.border_color.content_widget.connect("color-set", self._on_plain_color, "border_color")
+        self.look_section.add_row(self.border_color)
+        row = NumberRow(_("Crosshairs border size (px)"), "", crosshairs.BORDER[1])
+        row.content_widget.set_range(*crosshairs.BORDER)
+        row.content_widget.connect("value-changed", self._on_number, "border")
+        self.look_section.add_row(row)
+        self.numbers["border"] = row
+        self.orientation = ComboBox(_("Crosshairs orientation"), orientations())
+        self.orientation.content_widget.connect("changed", self._on_choice, "orientation")
+        self.look_section.add_row(self.orientation)
+        self.auto_hide = Switch(_("Hide the crosshairs while the pointer is hidden"))
+        self.auto_hide.content_widget.connect("notify::active", self._on_flag, "auto_hide")
+        self.look_section.add_row(self.auto_hide)
+        self.fixed = Switch(_("Fixed crosshairs length"))
+        with_detail(self.fixed, _("Each line as long as set, rather than to the screen's edge."))
+        self.fixed.content_widget.connect("notify::active", self._on_flag, "fixed")
+        self.look_section.add_row(self.fixed)
+        row = NumberRow(_("Crosshairs fixed length (px)"), "", crosshairs.LENGTH[1])
+        row.content_widget.set_range(*crosshairs.LENGTH)
+        row.content_widget.connect("value-changed", self._on_number, "fixed_length")
+        self.fixed_revealer = self.look_section.add_reveal_row(row)
+        self.numbers["fixed_length"] = row
+
+        self.glide_section = page.add_section(
+            _("Gliding cursor"),
+            _(
+                "Places the pointer anywhere on the screen and clicks, with the keyboard"
+                " alone. Press its shortcut to send a line across the screen, again to slow"
+                " it, again to hold it and send a line down, again to slow that, and once more"
+                " to click where they cross. Escape stops it."
+            ),
+        )
+        self.glide_shortcut = Switch(_("Glide with a keyboard shortcut"))
+        self.glide_shortcut.content_widget.connect(
+            "notify::active", self._on_flag, "glide_shortcut"
+        )
+        self.glide_section.add_row(self.glide_shortcut)
+        glide_keys = Text("")
+        self.glide_keys = glide_keys.content_widget
+        self.glide_section.add_row(glide_keys)
+        self.speeds = {}
+        for key, label, detail in (
+            (
+                "glide_speed",
+                _("Initial speed"),
+                _("How fast the line moves as it starts out."),
+            ),
+            (
+                "glide_slow",
+                _("Reduced speed"),
+                _("How fast it moves once a second press has slowed it."),
+            ),
+        ):
+            slider = SliderRow(label, *crosshairs.SPEED, 1)
+            with_detail(slider, detail)
+            slider.content_widget.connect("value-changed", self._on_slider, key)
+            self.glide_section.add_row(slider)
+            self.speeds[key] = slider
+        self.sections = (self.keys_section, self.look_section, self.glide_section)
+
+    def _on_plain_color(self, button: Gtk.ColorButton, key: str) -> None:
+        self._save({key: to_hex(button.get_rgba())[:7]})
+
+    def show_settings(self, settings: object) -> None:
+        if not isinstance(settings, Mapping):
+            return
+        options = crosshairs.Options.read(settings)
+        self._shown = dict(options.settings())
+        self._loading = True
+        try:
+            self.shortcut.content_widget.set_active(options.shortcut)
+            self.keys.set_text(
+                self._keys_text(
+                    self._shortcut, crosshairs.SHORTCUT_KEYS, "Mouse Pointer Crosshairs"
+                )
+                if options.shortcut
+                else ""
+            )
+            self.auto_activate.content_widget.set_active(options.auto_activate)
+            self.color.content_widget.set_rgba(from_hex(options.color + "ff"))
+            self.opacity.content_widget.set_value(options.opacity)
+            for key, row in self.numbers.items():
+                row.content_widget.set_value(getattr(options, key))
+            self.border_color.content_widget.set_rgba(from_hex(options.border_color + "ff"))
+            self.orientation.content_widget.set_active_id(options.orientation)
+            self.auto_hide.content_widget.set_active(options.auto_hide)
+            self.fixed.content_widget.set_active(options.fixed)
+            self.fixed_revealer.set_reveal_child(options.fixed)
+            self.glide_shortcut.content_widget.set_active(options.glide_shortcut)
+            self.glide_keys.set_text(
+                self._keys_text(self._glide_shortcut, crosshairs.GLIDE_KEYS, "Gliding cursor")
+                if options.glide_shortcut
+                else ""
+            )
+            for key, slider in self.speeds.items():
+                slider.content_widget.set_value(getattr(options, key))
+        finally:
+            self._loading = False
+
+
 class MouseUtilitiesPage(SettingsPage):
     def __init__(
         self,
@@ -636,8 +804,21 @@ class MouseUtilitiesPage(SettingsPage):
                 highlighter.SHORTCUT_NAME, highlighter.SHORTCUT_COMMAND, highlighter.SHORTCUT_KEYS
             ),
         )
+        self.crosshairs = CrosshairsPart(
+            self,
+            client,
+            show_error,
+            found.get("crosshairs")
+            or CustomShortcut(
+                crosshairs.SHORTCUT_NAME, crosshairs.SHORTCUT_COMMAND, crosshairs.SHORTCUT_KEYS
+            ),
+            found.get("glidingcursor")
+            or CustomShortcut(
+                crosshairs.GLIDE_NAME, crosshairs.GLIDE_COMMAND, crosshairs.GLIDE_KEYS
+            ),
+        )
         self.parts: dict[str, MousePart] = {
-            part.module_id: part for part in (self.findmymouse, self.highlighter)
+            part.module_id: part for part in (self.findmymouse, self.highlighter, self.crosshairs)
         }
         self.refresh()
 
