@@ -1074,9 +1074,14 @@ def test_find_my_mouse_part_shows_and_saves_its_settings(client: FakeClient) -> 
     assert page.keys.get_text() == "Shift+Super+F"
     page.skip_gamemode.content_widget.set_active(False)
     assert client.mouse_calls[-1] == {"skip_gamemode": False}
+    # A number is sent at once, then at most every LIVE_EVERY_MS while it keeps changing.
     page.radius.content_widget.set_value(150)
-    page._save_now()
     assert client.mouse_calls[-1] == {"radius": 150}
+    page.radius.content_widget.set_value(160)
+    assert client.mouse_calls[-1] == {"radius": 150}
+    page._live_tick()
+    assert client.mouse_calls[-1] == {"radius": 160}
+    assert page._live_tick() is False
     rgba = Gdk.RGBA()
     rgba.parse("rgba(255,0,0,0.5)")
     page.spotlight.content_widget.set_rgba(rgba)

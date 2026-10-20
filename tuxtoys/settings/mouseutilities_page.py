@@ -44,6 +44,8 @@ from tuxtoys.settings.widgets import open_keyboard_settings  # noqa: E402
 
 MOUSE_SCHEMA = "org.cinnamon.desktop.peripherals.mouse"
 INTERFACE_SCHEMA = "org.cinnamon.desktop.interface"
+# How often a number or a slider being changed is sent, so the tool follows it as it moves.
+LIVE_EVERY_MS = 60
 
 Flag = Callable[[str, str, bool], bool]
 
@@ -145,6 +147,7 @@ class MousePart:
         self._shown_enabled: bool | None = None
         self._pending: dict[str, object] = {}
         self._save_timer = 0
+        self._live_timer = 0
         self.sections: tuple[Gtk.Widget, ...] = ()
 
     def top(self, title: str, description: str, switch: str) -> Gtk.Widget:
@@ -216,18 +219,29 @@ class MousePart:
         self._save({key: to_hex(button.get_rgba())})
 
     def _on_number(self, field: Gtk.SpinButton, key: str) -> None:
-        self._save({key: field.get_value_as_int()}, later=True)
+        self._save({key: field.get_value_as_int()}, live=True)
 
     def _on_slider(self, scale: Gtk.Scale, key: str) -> None:
-        self._save({key: round(scale.get_value())}, later=True)
+        self._save({key: round(scale.get_value())}, live=True)
 
-    def _save(self, changes: Mapping[str, object], *, later: bool = False) -> None:
+    def _save(
+        self, changes: Mapping[str, object], *, later: bool = False, live: bool = False
+    ) -> None:
+        """Saves at once; `later`, once typing has stopped; `live`, at once and then at most
+        every LIVE_EVERY_MS while the value keeps changing, so the tool follows a slider or
+        the + and - buttons as they move.
+        """
         if self._loading:
             return
         changes = {key: value for key, value in changes.items() if self._shown.get(key) != value}
         if not changes:
             return
         self._pending.update(changes)
+        if live:
+            if not self._live_timer:
+                self._save_now()
+                self._live_timer = GLib.timeout_add(LIVE_EVERY_MS, self._live_tick)
+            return
         if self._save_timer:
             GLib.source_remove(self._save_timer)
             self._save_timer = 0
@@ -235,6 +249,14 @@ class MousePart:
             self._save_timer = GLib.timeout_add(SAVE_AFTER_MS, self._save_now)
         else:
             self._save_now()
+
+    def _live_tick(self) -> bool:
+        """What changed since the last send goes now; with nothing, the stretch is over."""
+        if self._pending:
+            self._save_now()
+            return GLib.SOURCE_CONTINUE
+        self._live_timer = 0
+        return GLib.SOURCE_REMOVE
 
     def _save_now(self) -> bool:
         self._save_timer = 0
