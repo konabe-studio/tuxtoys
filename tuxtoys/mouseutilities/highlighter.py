@@ -1,19 +1,20 @@
 """Mouse Highlighter in the helper: the clicks the watcher sees handed to the pure model in
 its thread, under a lock, and the canvas woken in the main loop to draw what the model says.
-Whether it is on is kept for the session, so a change of settings, which starts the helper
-again, leaves it as it was.
+Whether it is on is kept for the session, so the helper starting again, when another mouse
+tool comes on or goes off, leaves it as it was.
 """
 
 import threading
 from collections.abc import Sequence
 
-from gi.repository import Gdk, GLib
+from gi.repository import GLib
 
 from tuxtoys.inputwatch.detect import Event
 from tuxtoys.modules.mousehighlighter.effects import Highlighter, Shape
 from tuxtoys.modules.mousehighlighter.options import Options
 from tuxtoys.modules.mouseutilities.state import read_active, state_path, write_active
 from tuxtoys.mouseutilities.canvas import Canvas
+from tuxtoys.mouseutilities.pointer import pointer_now
 
 
 def now() -> int:
@@ -23,6 +24,7 @@ def now() -> int:
 class HighlighterTool:
     def __init__(self, options: Options) -> None:
         self._model = Highlighter(options)
+        self._model.pointer = pointer_now()
         self._state = state_path()
         kept = read_active(self._state, "mousehighlighter")
         if kept is not None:
@@ -51,14 +53,20 @@ class HighlighterTool:
 
     def toggle(self) -> None:
         """Its shortcut, through the helper's ToggleHighlighter."""
-        display = Gdk.Display.get_default()
+        pointer = pointer_now()
         with self._lock:
             self._model.toggle()
             active = self._model.active
-            if display is not None:
-                _screen, x, y = display.get_default_seat().get_pointer().get_position()
-                self._model.pointer = (x, y)
+            self._model.pointer = pointer
         write_active(self._state, "mousehighlighter", active)
+        self._canvas.wake()
+
+    def configure(self, options: Options) -> None:
+        """New settings, from the daemon, without starting the helper again: the
+        highlighting stays on or off, and what it draws takes the new look at once.
+        """
+        with self._lock:
+            self._model.options = options
         self._canvas.wake()
 
     def _frame(self) -> tuple[Sequence[Shape], bool]:

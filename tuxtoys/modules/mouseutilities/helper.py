@@ -1,6 +1,8 @@
 """The mouse tools' helper, as the daemon keeps it: one process for every mouse tool that is
-on, started with each one's settings, started again when any of them change, and stopped
-when the last one goes off. The tools' modules share the one MouseHelper of the daemon.
+on, started with each one's settings, started again when a tool comes on or goes off, and
+stopped when the last one goes off. A tool's new settings are handed to the running helper
+over D-Bus, so they take at once and nothing it shows is lost; it is started again only if
+that fails. The tools' modules share the one MouseHelper of the daemon.
 """
 
 import json
@@ -30,6 +32,33 @@ def start_process(command: list[str]) -> Process:
     return subprocess.Popen(command, env=environment)
 
 
+# Hands a running helper one tool's new settings; whether it took them.
+Send = Callable[[str, Mapping[str, Any]], bool]
+
+
+def send_settings(tool_id: str, settings: Mapping[str, Any]) -> bool:
+    from gi.repository import Gio, GLib
+
+    from tuxtoys.api import MOUSE_BUS_NAME, MOUSE_INTERFACE, MOUSE_PATH
+
+    try:
+        bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+        bus.call_sync(
+            MOUSE_BUS_NAME,
+            MOUSE_PATH,
+            MOUSE_INTERFACE,
+            "Configure",
+            GLib.Variant("(ss)", (tool_id, json.dumps(dict(settings)))),
+            None,
+            Gio.DBusCallFlags.NO_AUTO_START,
+            2000,
+            None,
+        )
+    except GLib.Error:
+        return False
+    return True
+
+
 def helper_command(
     tools: Mapping[str, Mapping[str, Any]], package_root: Path = PACKAGE_ROOT
 ) -> list[str]:
@@ -46,9 +75,14 @@ def helper_command(
 
 
 class MouseHelper:
-    def __init__(self, start: Callable[[list[str]], Process] = start_process) -> None:
-        """The tests hand in a start of their own."""
+    def __init__(
+        self,
+        start: Callable[[list[str]], Process] = start_process,
+        send: Send = send_settings,
+    ) -> None:
+        """The tests hand in a start and a send of their own."""
         self._start = start
+        self._send = send
         self._tools: dict[str, dict[str, Any]] = {}
         self._process: Process | None = None
 
@@ -67,6 +101,10 @@ class MouseHelper:
             self._tools[tool_id] = dict(settings)
         running = self._process is not None and self._process.poll() is None
         if self._tools == old and (running or not self._tools):
+            return
+        # Only its settings changed: the running helper takes them as they are.
+        same_tools = set(self._tools) == set(old)
+        if running and settings is not None and same_tools and self._send(tool_id, settings):
             return
         self._restart()
 

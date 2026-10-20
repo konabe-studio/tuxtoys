@@ -8,12 +8,13 @@ import threading
 from contextlib import suppress
 from typing import Any
 
-from gi.repository import Gdk, GLib
+from gi.repository import GLib
 
 from tuxtoys.inputwatch.detect import Event
 from tuxtoys.modules.findmymouse.options import Options
 from tuxtoys.modules.findmymouse.sonar import Action, Sonar
 from tuxtoys.mouseutilities.desktop import animations_on, gamemode_active
+from tuxtoys.mouseutilities.pointer import pointer_now
 from tuxtoys.mouseutilities.spotlight import Spotlight
 from tuxtoys.platform.x11 import active_window_class, active_window_fullscreen
 
@@ -30,6 +31,7 @@ class FindMyMouseTool:
         self.options = options
         self._bus = bus
         self._sonar = Sonar(options)
+        self._sonar.pointer = pointer_now()
         self._lock = threading.Lock()
         self._spotlight = Spotlight(options, animations_on())
         self._ticking = 0
@@ -43,13 +45,24 @@ class FindMyMouseTool:
 
     def toggle(self) -> None:
         """Its shortcut, through the helper's FindMouse."""
-        display = Gdk.Display.get_default()
+        pointer = pointer_now()
         with self._lock:
-            if display is not None:
-                _screen, x, y = display.get_default_seat().get_pointer().get_position()
-                self._sonar.pointer = (x, y)
+            self._sonar.pointer = pointer
             action = self._sonar.toggle()
         self._act(action)
+
+    def configure(self, options: Options) -> None:
+        """New settings, from the daemon, without starting the helper again. A spotlight
+        that is showing is put away first.
+        """
+        with self._lock:
+            shown = self._sonar.shown
+            self.options = options
+            self._sonar = Sonar(options)
+            self._sonar.pointer = pointer_now()
+        if shown:
+            self._spotlight.put_away()
+        self._spotlight.configure(options, animations_on())
 
     def _allowed(self) -> bool:
         """Not over an excluded app, a full-screen window, or a game GameMode runs."""

@@ -213,7 +213,7 @@ class FakeProcess:
 
 def test_the_module_keeps_its_shortcut_and_shares_the_helper() -> None:
     bindings = FakeKeybindings()
-    helper = MouseHelper(FakeProcess)
+    helper = MouseHelper(FakeProcess, lambda *_: True)
     helper.set_tool("findmymouse", {})
     module = MouseHighlighter(lambda: bindings, helper)
     module.enable(Context(None, MouseHighlighter.read_settings({})))
