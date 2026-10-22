@@ -54,6 +54,7 @@ TOOLS = (
         f"{APP_ID}-crosshairs-symbolic",
         "mouseutilities",
     ),
+    Tool("mousejump", "Mouse Jump", "input", "go-jump-symbolic", "mouseutilities"),
 )
 
 

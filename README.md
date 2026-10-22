@@ -176,6 +176,17 @@ and again to put them away: easy to follow on a large screen or a recording.
   and send a line down, again to slow that, and once more to click where they cross.
   Escape stops it.
 
+### Mouse Jump
+
+Press Super+Shift+D for a small picture of all your screens around the pointer, and
+click where you want the pointer to be: handy on large or several screens.
+
+- **Keys too:** 1 to 9 jump to that screen, P to the primary one, Left and Right to the
+  one before or after, Home and End to the first and the last.
+- **Its look:** compact, or with a frame round each screen, as PowerToys has them, or a
+  custom style of your own colors and borders, and the largest size the picture may take.
+- Escape or a click outside puts it away; it only moves the pointer, it does not click.
+
 ### File Locksmith
 
 Right-click a file or folder in Nemo and choose **What is using this?** to see which of

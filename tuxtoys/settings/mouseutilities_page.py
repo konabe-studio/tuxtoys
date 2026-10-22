@@ -12,6 +12,8 @@ the mode chosen, as PowerToys shows them.
 
 Mouse Pointer Crosshairs' part: its shortcut, whether it starts on, the crosshairs' look,
 and the gliding cursor's shortcut and speeds.
+
+Mouse Jump's part: its shortcut, the largest size of its preview, and the preview's style.
 """
 
 from collections.abc import Callable, Mapping
@@ -32,12 +34,15 @@ from xapp.SettingsWidgets import (  # noqa: E402
     Text,
 )
 
+from tuxtoys.alwaysontop.border import theme_accent  # noqa: E402
 from tuxtoys.api import ModuleInfo, ModuleOff, NotRunning, Refused  # noqa: E402
 from tuxtoys.core.i18n import _  # noqa: E402
 from tuxtoys.core.shortcut import CustomShortcut  # noqa: E402
 from tuxtoys.modules.crosshairs import options as crosshairs  # noqa: E402
 from tuxtoys.modules.findmymouse import options as findmymouse  # noqa: E402
 from tuxtoys.modules.mousehighlighter import options as highlighter  # noqa: E402
+from tuxtoys.modules.mousejump import options as mousejump  # noqa: E402
+from tuxtoys.modules.mousejump.layout import STYLES as JUMP_STYLES  # noqa: E402
 from tuxtoys.settings.alwaysontop_page import AppsRow, ColorRow, SliderRow  # noqa: E402
 from tuxtoys.settings.awake_page import SAVE_AFTER_MS  # noqa: E402
 from tuxtoys.settings.colorpicker_page import keys_label  # noqa: E402
@@ -95,6 +100,73 @@ def orientations() -> list[tuple[str, str]]:
         ("both", _("Vertical and horizontal lines")),
         ("vertical", _("Vertical only")),
         ("horizontal", _("Horizontal only")),
+    ]
+
+
+def preview_styles() -> list[tuple[str, str]]:
+    return [
+        # TRANSLATORS: Mouse Jump's preview style with no frames between the screens.
+        ("compact", _("Compact")),
+        # TRANSLATORS: Mouse Jump's preview style with a dark frame round each screen.
+        ("bezelled", _("Bezelled")),
+        # TRANSLATORS: Mouse Jump's preview style drawn with the settings below it.
+        ("custom", _("Custom")),
+    ]
+
+
+def custom_rows() -> list[tuple[str, str, str]]:
+    """The custom style's settings, as PowerToys' page has them: key, label, what it is.
+    A key ending in "color", "1" or "2" is a color; the others are numbers of pixels.
+    """
+    return [
+        (
+            "custom_color1",
+            _("Background color 1"),
+            _("Where the preview's background gradient starts."),
+        ),
+        (
+            "custom_color2",
+            _("Background color 2"),
+            _("Where the preview's background gradient ends."),
+        ),
+        ("custom_border", _("Border thickness"), _("Of the border round the preview, in pixels.")),
+        ("custom_border_color", _("Border color"), _("Of the border round the preview.")),
+        (
+            "custom_border_depth",
+            _("Border 3D depth"),
+            _("How much of the preview's border is drawn raised, in pixels."),
+        ),
+        (
+            "custom_padding",
+            _("Border padding"),
+            _("Between the preview's border and the screens' pictures, in pixels."),
+        ),
+        (
+            "custom_bezel",
+            _("Bezel thickness"),
+            _("Of the border round each screen's picture, in pixels."),
+        ),
+        ("custom_bezel_color", _("Bezel color"), _("Of the border round each screen's picture.")),
+        (
+            "custom_bezel_depth",
+            _("Bezel 3D depth"),
+            _("How much of each bezel is drawn raised, in pixels."),
+        ),
+        (
+            "custom_margin",
+            _("Screen margin"),
+            _("The gap between the screens' pictures, in pixels."),
+        ),
+        (
+            "custom_screen1",
+            _("Screen color 1"),
+            _("Where the gradient behind each screen's picture starts."),
+        ),
+        (
+            "custom_screen2",
+            _("Screen color 2"),
+            _("Where the gradient behind each screen's picture ends."),
+        ),
     ]
 
 
@@ -774,6 +846,114 @@ class CrosshairsPart(MousePart):
             self._loading = False
 
 
+class MouseJumpPart(MousePart):
+    module_id = "mousejump"
+
+    def __init__(
+        self,
+        page: SettingsPage,
+        client: Client,
+        show_error: Callable[[str], None],
+        shortcut: CustomShortcut,
+    ) -> None:
+        super().__init__(page, client, show_error)
+        self._shortcut = shortcut
+        self.first = self.top(
+            _("Mouse Jump"),
+            _(
+                "Shows a small picture of your screens; a click on it sends the pointer there."
+                " Escape or a click elsewhere puts it away."
+            ),
+            _("Use Mouse Jump"),
+        )
+        self.keys_section = page.add_section(
+            _("Activation"),
+            _("Change its keys in the Keyboard settings, under TuxToys: Mouse Jump."),
+        )
+        self.shortcut = Switch(_("Open it with a keyboard shortcut"))
+        self.shortcut.content_widget.connect("notify::active", self._on_flag, "shortcut")
+        self.keys_section.add_row(self.shortcut)
+        keys = Text("")
+        self.keys = keys.content_widget
+        self.keys_section.add_row(keys)
+        self.keys_section.add_row(
+            Button(_("Open the Keyboard settings"), lambda *_a: open_keyboard_settings(show_error))
+        )
+        self.look_section = page.add_section(
+            _("Thumbnail size"),
+            _("The largest the picture gets; never larger than the screen it opens on."),
+        )
+        self.width = number_row(_("Width (px)"), "", mousejump.WIDTH)
+        self.width.content_widget.connect("value-changed", self._on_number, "width")
+        self.look_section.add_row(self.width)
+        self.height = number_row(_("Height (px)"), "", mousejump.HEIGHT)
+        self.height.content_widget.connect("value-changed", self._on_number, "height")
+        self.look_section.add_row(self.height)
+        self.style = ComboBox(_("Preview style"), preview_styles())
+        with_detail(self.style, _("One of the two ready-made styles, or a custom one."))
+        self.style.content_widget.connect("changed", self._on_choice, "style")
+        self.look_section.add_row(self.style)
+        self.copy_revealer = self.look_section.add_reveal_row(
+            Button(_("Copy to the custom preview style"), lambda *_a: self._copy_to_custom())
+        )
+        self.custom: dict[str, SettingsWidget] = {}
+        self.custom_revealers = []
+        for key, label, detail in custom_rows():
+            if key.endswith(("color", "1", "2")):
+                row = ColorRow(label)
+                row.content_widget.connect("color-set", self._on_custom_color, key)
+                with_detail(row, detail)
+            else:
+                row = number_row(label, detail, mousejump.SIZE)
+                row.content_widget.connect("value-changed", self._on_number, key)
+            self.custom[key] = row
+            self.custom_revealers.append(self.look_section.add_reveal_row(row))
+        self.sections = (self.keys_section, self.look_section)
+
+    def _on_custom_color(self, button: Gtk.ColorButton, key: str) -> None:
+        self._save({key: to_hex(button.get_rgba())[:7]})
+
+    def _copy_to_custom(self) -> None:
+        """PowerToys' "Copy to custom preview style": the chosen style's parts into the
+        custom one, which is then chosen.
+        """
+        chosen = self._shown.get("style")
+        if chosen in JUMP_STYLES:
+            self._save({**mousejump.custom_from(JUMP_STYLES[chosen]), "style": "custom"})
+
+    def show_settings(self, settings: object) -> None:
+        if not isinstance(settings, Mapping):
+            return
+        options = mousejump.Options.read(settings)
+        self._shown = dict(options.settings())
+        self._loading = True
+        try:
+            self.shortcut.content_widget.set_active(options.shortcut)
+            self.keys.set_text(
+                self._keys_text(self._shortcut, mousejump.SHORTCUT_KEYS, "Mouse Jump")
+                if options.shortcut
+                else ""
+            )
+            self.width.content_widget.set_value(options.width)
+            self.height.content_widget.set_value(options.height)
+            self.style.content_widget.set_active_id(options.style)
+            custom = options.style == "custom"
+            self.copy_revealer.set_reveal_child(not custom)
+            for revealer in self.custom_revealers:
+                revealer.set_reveal_child(custom)
+            for key, row in self.custom.items():
+                value = getattr(options, key)
+                if isinstance(row, ColorRow):
+                    if not value:  # the theme's highlight color
+                        red, green, blue = theme_accent()
+                        value = "#" + "".join(f"{round(c * 255):02x}" for c in (red, green, blue))
+                    row.content_widget.set_rgba(from_hex(value + "ff"))
+                else:
+                    row.content_widget.set_value(value)
+        finally:
+            self._loading = False
+
+
 class MouseUtilitiesPage(SettingsPage):
     def __init__(
         self,
@@ -817,8 +997,18 @@ class MouseUtilitiesPage(SettingsPage):
                 crosshairs.GLIDE_NAME, crosshairs.GLIDE_COMMAND, crosshairs.GLIDE_KEYS
             ),
         )
+        self.mousejump = MouseJumpPart(
+            self,
+            client,
+            show_error,
+            found.get("mousejump")
+            or CustomShortcut(
+                mousejump.SHORTCUT_NAME, mousejump.SHORTCUT_COMMAND, mousejump.SHORTCUT_KEYS
+            ),
+        )
         self.parts: dict[str, MousePart] = {
-            part.module_id: part for part in (self.findmymouse, self.highlighter, self.crosshairs)
+            part.module_id: part
+            for part in (self.findmymouse, self.highlighter, self.crosshairs, self.mousejump)
         }
         self.refresh()
 
@@ -840,12 +1030,21 @@ class MouseUtilitiesPage(SettingsPage):
         if part is None:
             return
 
+        tries = [20]
+
         def scroll() -> bool:
             scroller = self.get_ancestor(Gtk.ScrolledWindow)
+            # Not laid out yet, as before the window is shown: look again, a few times.
+            adjustment = scroller.get_vadjustment() if scroller is not None else None
+            if adjustment is not None and adjustment.get_upper() <= adjustment.get_page_size():
+                tries[0] -= 1
+                return GLib.SOURCE_CONTINUE if tries[0] > 0 else GLib.SOURCE_REMOVE
             if scroller is not None:
                 found = part.first.translate_coordinates(self, 0, 0)
                 if found is not None:
                     scroller.get_vadjustment().set_value(max(found[1] - 12, 0))
             return GLib.SOURCE_REMOVE
 
-        GLib.idle_add(scroll)
+        # After GTK has laid the page out: scrolled at once, as the window opens on a tool's
+        # page, the parts are not where they will be. Looked at every 50 ms, for a second.
+        GLib.timeout_add(50, scroll)
