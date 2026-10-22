@@ -17,6 +17,7 @@
     tuxtoys crosshairs
     tuxtoys glidingcursor
     tuxtoys mousejump
+    tuxtoys cursorwrap
     tuxtoys modules [list | enable MODULE | disable MODULE]
 
 Exit status: 0 when done, 1 when TuxToys could not do it, 2 when the command line is wrong.
@@ -52,6 +53,7 @@ class Client(Protocol):
     def toggle_crosshairs(self) -> None: ...
     def glide_cursor(self) -> None: ...
     def jump_mouse(self) -> None: ...
+    def toggle_cursorwrap(self) -> None: ...
 
 
 def main(
@@ -83,6 +85,8 @@ def main(
             run_crosshairs(client, args.command)
         elif args.command == "mousejump":
             run_mousejump(client)
+        elif args.command == "cursorwrap":
+            run_cursorwrap(client)
         elif args.command in (
             "hosts",
             "env",
@@ -119,6 +123,9 @@ def main(
         elif args.command == "textextractor":
             print(_("Text Extractor is switched off in TuxToys."), file=err)
             print(_("Switch it on with: tuxtoys modules enable textextractor"), file=err)
+        elif args.command == "cursorwrap":
+            print(_("CursorWrap is switched off in TuxToys."), file=err)
+            print(_("Switch it on with: tuxtoys modules enable cursorwrap"), file=err)
         elif args.command == "mousejump":
             print(_("Mouse Jump is switched off in TuxToys."), file=err)
             print(_("Switch it on with: tuxtoys modules enable mousejump"), file=err)
@@ -204,6 +211,13 @@ def run_mousejump(client: Client) -> None:
     if not any(info.id == "mousejump" and info.state == "on" for info in client.modules()):
         raise ModuleOff
     client.jump_mouse()
+
+
+def run_cursorwrap(client: Client) -> None:
+    """CursorWrap's wrapping on or off, as its shortcut does, while it is switched on."""
+    if not any(info.id == "cursorwrap" and info.state == "on" for info in client.modules()):
+        raise ModuleOff
+    client.toggle_cursorwrap()
 
 
 def run_window(client: Client, command: str, spawn: Callable[[list[str]], None]) -> None:
@@ -410,6 +424,11 @@ def parser() -> argparse.ArgumentParser:
         "mousejump",
         help=_("send the pointer anywhere from a picture of your screens"),
         description=_("Open Mouse Jump's picture of your screens, or put it away."),
+    )
+    commands.add_parser(
+        "cursorwrap",
+        help=_("let the pointer wrap round the screens, or stop it"),
+        description=_("Turn CursorWrap's wrapping of the pointer on or off."),
     )
     commands.add_parser(
         "env",
