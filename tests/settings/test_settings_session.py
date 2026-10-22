@@ -23,6 +23,7 @@ if not Gtk.init_check()[0]:
 from tuxtoys.api import ModuleInfo, ModuleOff, NotRunning, Refused  # noqa: E402
 from tuxtoys.modules.colorpicker.options import Options as PickerOptions  # noqa: E402
 from tuxtoys.modules.crosshairs.options import Options as CrosshairsOptions  # noqa: E402
+from tuxtoys.modules.cursorwrap.options import Options as WrapOptions  # noqa: E402
 from tuxtoys.modules.findmymouse.options import Options as MouseOptions  # noqa: E402
 from tuxtoys.modules.hosts.options import Options as HostsOptions  # noqa: E402
 from tuxtoys.modules.imageresizer.options import Options as ResizerOptions  # noqa: E402
@@ -115,6 +116,8 @@ class FakeClient:
         self.crosshairs_calls: list[dict] = []
         self.jump_settings = JumpOptions().settings()
         self.jump_calls: list[dict] = []
+        self.wrap_settings = WrapOptions().settings()
+        self.wrap_calls: list[dict] = []
         self.ruler_calls: list[dict] = []
         self.hosts_settings = HostsOptions().settings()
         self.hosts_calls: list[dict] = []
@@ -163,6 +166,7 @@ class FakeClient:
             ModuleInfo("mousehighlighter", "Mouse Highlighter", "", "on", ""),
             ModuleInfo("crosshairs", "Mouse Pointer Crosshairs", "", "on", ""),
             ModuleInfo("mousejump", "Mouse Jump", "", "on", ""),
+            ModuleInfo("cursorwrap", "CursorWrap", "", "on", ""),
         ]
 
     def set_module_enabled(self, module_id: str, enabled: bool) -> None:
@@ -186,6 +190,8 @@ class FakeClient:
             return dict(self.crosshairs_settings)
         if module_id == "mousejump":
             return dict(self.jump_settings)
+        if module_id == "cursorwrap":
+            return dict(self.wrap_settings)
         if module_id == "lightswitch":
             return dict(self.light_settings)
         if module_id == "alwaysontop":
@@ -213,6 +219,10 @@ class FakeClient:
     def set_module_settings(self, module_id: str, changes: Mapping[str, object]) -> None:
         if self.fail:
             raise self.fail
+        if module_id == "cursorwrap":
+            self.wrap_calls.append(dict(changes))
+            self.wrap_settings = WrapOptions.read(self.wrap_settings).update(changes).settings()
+            return
         if module_id == "mousejump":
             self.jump_calls.append(dict(changes))
             self.jump_settings = JumpOptions.read(self.jump_settings).update(changes).settings()
@@ -455,6 +465,7 @@ def test_the_sidebar_starts_with_the_overview_then_the_tools_under_headings(
         "mousehighlighter",
         "crosshairs",
         "mousejump",
+        "cursorwrap",
         "locksmith",
         "newplus",
         "imageresizer",
@@ -470,7 +481,7 @@ def test_the_sidebar_starts_with_the_overview_then_the_tools_under_headings(
     assert rows[7].get_header().get_text() == "Screen"
     assert rows[11].get_header().get_text() == "Input"
     assert rows[12].get_header() is None
-    assert rows[15].get_header().get_text() == "Files"
+    assert rows[16].get_header().get_text() == "Files"
     assert rows[11].stack == "mouseutilities"
     assert rows[0].get_child().get_children()[-1].get_text() == "Home"
     assert window.stack.get_visible_child_name() == "overview"
@@ -1082,6 +1093,7 @@ def mouse_page(client: FakeClient, flags: dict[str, bool] | None = None) -> Mous
             "crosshairs": FakeShortcut("<Alt><Super>p"),
             "glidingcursor": FakeShortcut("<Alt><Super>period"),
             "mousejump": FakeShortcut("<Shift><Super>d"),
+            "cursorwrap": FakeShortcut("<Alt><Super>u"),
         },
         lambda schema, key, default: found.get(key, default),
     )
@@ -1132,6 +1144,8 @@ def test_the_mouse_row_opens_the_shared_page(window: SettingsWindow) -> None:
     window.show_page("crosshairs")
     assert window.stack.get_visible_child_name() == "mouseutilities"
     window.show_page("mousejump")
+    assert window.stack.get_visible_child_name() == "mouseutilities"
+    window.show_page("cursorwrap")
     assert window.stack.get_visible_child_name() == "mouseutilities"
 
 
@@ -1185,6 +1199,16 @@ def test_mouse_jump_part_shows_and_saves_its_settings(client: FakeClient) -> Non
     assert client.jump_calls[-1]["custom_bezel"] == 0
     assert all(r.get_reveal_child() for r in page.custom_revealers)
     assert not page.copy_revealer.get_reveal_child()
+
+
+def test_cursorwrap_part_shows_and_saves_its_settings(client: FakeClient) -> None:
+    page = mouse_page(client).cursorwrap
+    assert page.keys.get_text() == "Alt+Super+U"
+    assert page.mode.content_widget.get_active_id() == "both"
+    page.activation.content_widget.set_active_id("ctrl")
+    assert client.wrap_calls[-1] == {"activation": "ctrl"}
+    page.flags["not_while_dragging"].content_widget.set_active(False)
+    assert client.wrap_calls[-1] == {"not_while_dragging": False}
 
 
 def test_the_shared_page_hands_each_part_its_own_settings(client: FakeClient) -> None:

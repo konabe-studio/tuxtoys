@@ -4149,3 +4149,87 @@ msgstr "Másolás egyéni előnézeti stílusba"
 #: tuxtoys/settings/mouseutilities_page.py
 msgid "One of the two ready-made styles, or a custom one."
 msgstr "A két kész stílus egyike, vagy egy egyéni."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Activation and behavior"
+msgstr "Aktiválás és viselkedés"
+
+#: tuxtoys/alwaysontop/__init__.py tuxtoys/alwaysontop/main.py tuxtoys/api.py tuxtoys/modules/__init__.py tuxtoys/modules/alwaysontop/__init__.py tuxtoys/modules/alwaysontop/module.py tuxtoys/modules/alwaysontop/options.py tuxtoys/modules/cursorwrap/options.py tuxtoys/modules/shortcutguide/reading.py tuxtoys/platform/x11.py tuxtoys/settings/alwaysontop_page.py tuxtoys/settings/catalog.py tuxtoys/settings/mouseutilities_page.py tuxtoys/settings/window.py tuxtoys/tray/app.py
+msgid "Always"
+msgstr "Mindig"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Change its keys in the Keyboard settings, under TuxToys: CursorWrap."
+msgstr "A billentyűit a Billentyűzet beállításaiban módosíthatja, a TuxToys: CursorWrap alatt."
+
+#: tuxtoys/cli.py tuxtoys/client.py tuxtoys/modules/__init__.py tuxtoys/modules/cursorwrap/__init__.py tuxtoys/modules/cursorwrap/module.py tuxtoys/modules/cursorwrap/options.py tuxtoys/modules/cursorwrap/topology.py tuxtoys/mouseutilities/cursorwrap.py tuxtoys/mouseutilities/main.py tuxtoys/settings/catalog.py tuxtoys/settings/mouseutilities_page.py
+msgid "CursorWrap"
+msgstr "CursorWrap"
+
+#: tuxtoys/cli.py
+msgid "CursorWrap is switched off in TuxToys."
+msgstr "A CursorWrap ki van kapcsolva a TuxToysban."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Not while dragging"
+msgstr "Körbefuttatás letiltása húzás közben"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Not with a single monitor"
+msgstr "Körbefutás letiltása egyetlen monitor használatakor"
+
+#: tuxtoys/cli.py
+msgid "Switch it on with: tuxtoys modules enable cursorwrap"
+msgstr "Bekapcsolás: tuxtoys modules enable cursorwrap"
+
+#: tuxtoys/modules/cursorwrap/module.py tuxtoys/settings/mouseutilities_page.py
+msgid "Takes the pointer out at one edge of the screens and back in at the other."
+msgstr "A mutatót a képernyők egyik szélén kivezeti, a másikon visszahozza."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Takes the pointer out at one edge of the screens and back in at the other. Its shortcut turns it on and off."
+msgstr "A mutatót a képernyők egyik szélén kivezeti, a másikon visszahozza. A gyorsbillentyűje be- és kikapcsolja."
+
+#: tuxtoys/cli.py
+msgid "Turn CursorWrap's wrapping of the pointer on or off."
+msgstr "A CursorWrap körbefuttatásának be- vagy kikapcsolása."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Use CursorWrap"
+msgstr "CursorWrap használata"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Vertical and horizontal"
+msgstr "Függőleges és vízszintes"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "When to wrap"
+msgstr "Körbefuttatás aktiválása"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "While Ctrl is held"
+msgstr "Ctrl nyomva tartása"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "While Shift is held"
+msgstr "Shift nyomva tartása"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "While the left button is held."
+msgstr "Amíg a bal gomb le van nyomva."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Wrap mode"
+msgstr "Körbefutás mód"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Wrap whenever the pointer reaches an edge, or only then."
+msgstr "Mindig, amikor a mutató eléri a képernyő szélét, vagy csak ilyenkor."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Wraps from login on, without the shortcut."
+msgstr "Bejelentkezéstől kezdve körbefuttat, gyorsbillentyű nélkül."
+
+#: tuxtoys/cli.py
+msgid "let the pointer wrap round the screens, or stop it"
+msgstr "a mutató körbefuttatása a képernyőkön, vagy leállítása"

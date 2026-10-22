@@ -2,8 +2,8 @@
 pointer and the modifier keys once, hands every event to each tool, and draws what they call
 for, until the daemon stops it. Started by the daemon with a --tool id=settings for each,
 not by hand. Its name on the session bus takes the tools' shortcuts: `tuxtoys findmymouse`,
-`tuxtoys mousehighlighter`, `tuxtoys crosshairs`, `tuxtoys glidingcursor` and
-`tuxtoys mousejump`.
+`tuxtoys mousehighlighter`, `tuxtoys crosshairs`, `tuxtoys glidingcursor`,
+`tuxtoys mousejump` and `tuxtoys cursorwrap`.
 """
 
 import argparse
@@ -16,7 +16,7 @@ from typing import Any
 
 log = logging.getLogger("tuxtoys-mouse-utilities")
 
-TOOLS = ("findmymouse", "mousehighlighter", "crosshairs", "mousejump")
+TOOLS = ("findmymouse", "mousehighlighter", "crosshairs", "mousejump", "cursorwrap")
 INTERFACE_XML = """
 <node>
   <interface name="{interface}">
@@ -25,6 +25,7 @@ INTERFACE_XML = """
     <method name="ToggleCrosshairs"/>
     <method name="GlideCursor"/>
     <method name="JumpMouse"/>
+    <method name="ToggleCursorWrap"/>
     <method name="Configure">
       <arg name="tool" type="s" direction="in"/>
       <arg name="settings" type="s" direction="in"/>
@@ -102,6 +103,11 @@ def main(argv: list[str] | None = None) -> int:
         from tuxtoys.mouseutilities.mousejump import MouseJumpTool
 
         running["mousejump"] = MouseJumpTool(JumpOptions.read(tools["mousejump"]))
+    if "cursorwrap" in tools:
+        from tuxtoys.modules.cursorwrap.options import Options as WrapOptions
+        from tuxtoys.mouseutilities.cursorwrap import CursorWrapTool
+
+        running["cursorwrap"] = CursorWrapTool(WrapOptions.read(tools["cursorwrap"]))
 
     def handle(event: Event) -> None:
         """In the watcher's thread: every tool hears every event."""
@@ -129,6 +135,8 @@ def main(argv: list[str] | None = None) -> int:
             running["crosshairs"].glide()
         elif method == "JumpMouse" and "mousejump" in running:
             running["mousejump"].jump()
+        elif method == "ToggleCursorWrap" and "cursorwrap" in running:
+            running["cursorwrap"].toggle()
         invocation.return_value(None)
 
     def configure(tool_id: str, settings: str, invocation: Any) -> None:  # noqa: ANN401
@@ -145,6 +153,10 @@ def main(argv: list[str] | None = None) -> int:
             from tuxtoys.modules.findmymouse.options import Options
 
             running[tool_id].configure(Options.read(found[tool_id]))
+        elif tool_id == "cursorwrap":
+            from tuxtoys.modules.cursorwrap.options import Options as WrapOptions
+
+            running[tool_id].configure(WrapOptions.read(found[tool_id]))
         elif tool_id == "mousejump":
             from tuxtoys.modules.mousejump.options import Options as JumpOptions
 

@@ -14,6 +14,8 @@ Mouse Pointer Crosshairs' part: its shortcut, whether it starts on, the crosshai
 and the gliding cursor's shortcut and speeds.
 
 Mouse Jump's part: its shortcut, the largest size of its preview, and the preview's style.
+
+CursorWrap's part: its shortcut, whether it starts on, and when the pointer wraps.
 """
 
 from collections.abc import Callable, Mapping
@@ -39,6 +41,7 @@ from tuxtoys.api import ModuleInfo, ModuleOff, NotRunning, Refused  # noqa: E402
 from tuxtoys.core.i18n import _  # noqa: E402
 from tuxtoys.core.shortcut import CustomShortcut  # noqa: E402
 from tuxtoys.modules.crosshairs import options as crosshairs  # noqa: E402
+from tuxtoys.modules.cursorwrap import options as cursorwrap  # noqa: E402
 from tuxtoys.modules.findmymouse import options as findmymouse  # noqa: E402
 from tuxtoys.modules.mousehighlighter import options as highlighter  # noqa: E402
 from tuxtoys.modules.mousejump import options as mousejump  # noqa: E402
@@ -111,6 +114,22 @@ def preview_styles() -> list[tuple[str, str]]:
         ("bezelled", _("Bezelled")),
         # TRANSLATORS: Mouse Jump's preview style drawn with the settings below it.
         ("custom", _("Custom")),
+    ]
+
+
+def wrap_modes() -> list[tuple[str, str]]:
+    return [
+        ("both", _("Vertical and horizontal")),
+        ("vertical", _("Vertical only")),
+        ("horizontal", _("Horizontal only")),
+    ]
+
+
+def wrap_activations() -> list[tuple[str, str]]:
+    return [
+        ("always", _("Always")),
+        ("ctrl", _("While Ctrl is held")),
+        ("shift", _("While Shift is held")),
     ]
 
 
@@ -954,6 +973,87 @@ class MouseJumpPart(MousePart):
             self._loading = False
 
 
+class CursorWrapPart(MousePart):
+    module_id = "cursorwrap"
+
+    def __init__(
+        self,
+        page: SettingsPage,
+        client: Client,
+        show_error: Callable[[str], None],
+        shortcut: CustomShortcut,
+    ) -> None:
+        super().__init__(page, client, show_error)
+        self._shortcut = shortcut
+        self.first = self.top(
+            _("CursorWrap"),
+            _(
+                "Takes the pointer out at one edge of the screens and back in at the other."
+                " Its shortcut turns it on and off."
+            ),
+            _("Use CursorWrap"),
+        )
+        self.keys_section = page.add_section(
+            _("Activation and behavior"),
+            _("Change its keys in the Keyboard settings, under TuxToys: CursorWrap."),
+        )
+        self.shortcut = Switch(_("Turn it on and off with a keyboard shortcut"))
+        self.shortcut.content_widget.connect("notify::active", self._on_flag, "shortcut")
+        self.keys_section.add_row(self.shortcut)
+        keys = Text("")
+        self.keys = keys.content_widget
+        self.keys_section.add_row(keys)
+        self.keys_section.add_row(
+            Button(_("Open the Keyboard settings"), lambda *_a: open_keyboard_settings(show_error))
+        )
+        self.flags = {}
+        for key, label, detail in (
+            (
+                "auto_activate",
+                _("On from the start"),
+                _("Wraps from login on, without the shortcut."),
+            ),
+            ("not_while_dragging", _("Not while dragging"), _("While the left button is held.")),
+        ):
+            row = Switch(label)
+            with_detail(row, detail)
+            row.content_widget.connect("notify::active", self._on_flag, key)
+            self.keys_section.add_row(row)
+            self.flags[key] = row
+        self.mode = ComboBox(_("Wrap mode"), wrap_modes())
+        self.mode.content_widget.connect("changed", self._on_choice, "mode")
+        self.keys_section.add_row(self.mode)
+        self.activation = ComboBox(_("When to wrap"), wrap_activations())
+        with_detail(self.activation, _("Wrap whenever the pointer reaches an edge, or only then."))
+        self.activation.content_widget.connect("changed", self._on_choice, "activation")
+        self.keys_section.add_row(self.activation)
+        row = Switch(_("Not with a single monitor"))
+        row.content_widget.connect("notify::active", self._on_flag, "not_with_one_monitor")
+        self.keys_section.add_row(row)
+        self.flags["not_with_one_monitor"] = row
+        self.sections = (self.keys_section,)
+
+    def show_settings(self, settings: object) -> None:
+        if not isinstance(settings, Mapping):
+            return
+        options = cursorwrap.Options.read(settings)
+        self._shown = dict(options.settings())
+        self._loading = True
+        try:
+            self.shortcut.content_widget.set_active(options.shortcut)
+            self.keys.set_text(
+                self._keys_text(self._shortcut, cursorwrap.SHORTCUT_KEYS, "CursorWrap")
+                if options.shortcut
+                else ""
+            )
+            for key, row in self.flags.items():
+                row.content_widget.set_active(getattr(options, key))
+            self.mode.content_widget.set_active_id(options.mode)
+            self.activation.content_widget.set_active_id(options.activation)
+        finally:
+            self._loading = False
+
+
 class MouseUtilitiesPage(SettingsPage):
     def __init__(
         self,
@@ -1006,9 +1106,24 @@ class MouseUtilitiesPage(SettingsPage):
                 mousejump.SHORTCUT_NAME, mousejump.SHORTCUT_COMMAND, mousejump.SHORTCUT_KEYS
             ),
         )
+        self.cursorwrap = CursorWrapPart(
+            self,
+            client,
+            show_error,
+            found.get("cursorwrap")
+            or CustomShortcut(
+                cursorwrap.SHORTCUT_NAME, cursorwrap.SHORTCUT_COMMAND, cursorwrap.SHORTCUT_KEYS
+            ),
+        )
         self.parts: dict[str, MousePart] = {
             part.module_id: part
-            for part in (self.findmymouse, self.highlighter, self.crosshairs, self.mousejump)
+            for part in (
+                self.findmymouse,
+                self.highlighter,
+                self.crosshairs,
+                self.mousejump,
+                self.cursorwrap,
+            )
         }
         self.refresh()
 

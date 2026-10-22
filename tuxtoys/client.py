@@ -127,6 +127,10 @@ class Client:
         """Mouse Jump's preview, or the preview put away, through the mouse tools' helper."""
         self._call(MOUSE_PATH, MOUSE_INTERFACE, "JumpMouse", None, None, MOUSE_BUS_NAME)
 
+    def toggle_cursorwrap(self) -> None:
+        """CursorWrap's wrapping on, or off again, through the mouse tools' helper."""
+        self._call(MOUSE_PATH, MOUSE_INTERFACE, "ToggleCursorWrap", None, None, MOUSE_BUS_NAME)
+
     def _call(
         self,
         path: str,

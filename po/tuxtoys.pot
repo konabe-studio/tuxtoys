@@ -3985,3 +3985,87 @@ msgstr ""
 #: tuxtoys/settings/mouseutilities_page.py
 msgid "One of the two ready-made styles, or a custom one."
 msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Activation and behavior"
+msgstr ""
+
+#: tuxtoys/alwaysontop/__init__.py tuxtoys/alwaysontop/main.py tuxtoys/api.py tuxtoys/modules/__init__.py tuxtoys/modules/alwaysontop/__init__.py tuxtoys/modules/alwaysontop/module.py tuxtoys/modules/alwaysontop/options.py tuxtoys/modules/cursorwrap/options.py tuxtoys/modules/shortcutguide/reading.py tuxtoys/platform/x11.py tuxtoys/settings/alwaysontop_page.py tuxtoys/settings/catalog.py tuxtoys/settings/mouseutilities_page.py tuxtoys/settings/window.py tuxtoys/tray/app.py
+msgid "Always"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Change its keys in the Keyboard settings, under TuxToys: CursorWrap."
+msgstr ""
+
+#: tuxtoys/cli.py tuxtoys/client.py tuxtoys/modules/__init__.py tuxtoys/modules/cursorwrap/__init__.py tuxtoys/modules/cursorwrap/module.py tuxtoys/modules/cursorwrap/options.py tuxtoys/modules/cursorwrap/topology.py tuxtoys/mouseutilities/cursorwrap.py tuxtoys/mouseutilities/main.py tuxtoys/settings/catalog.py tuxtoys/settings/mouseutilities_page.py
+msgid "CursorWrap"
+msgstr ""
+
+#: tuxtoys/cli.py
+msgid "CursorWrap is switched off in TuxToys."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Not while dragging"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Not with a single monitor"
+msgstr ""
+
+#: tuxtoys/cli.py
+msgid "Switch it on with: tuxtoys modules enable cursorwrap"
+msgstr ""
+
+#: tuxtoys/modules/cursorwrap/module.py tuxtoys/settings/mouseutilities_page.py
+msgid "Takes the pointer out at one edge of the screens and back in at the other."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Takes the pointer out at one edge of the screens and back in at the other. Its shortcut turns it on and off."
+msgstr ""
+
+#: tuxtoys/cli.py
+msgid "Turn CursorWrap's wrapping of the pointer on or off."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Use CursorWrap"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Vertical and horizontal"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "When to wrap"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "While Ctrl is held"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "While Shift is held"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "While the left button is held."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Wrap mode"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Wrap whenever the pointer reaches an edge, or only then."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Wraps from login on, without the shortcut."
+msgstr ""
+
+#: tuxtoys/cli.py
+msgid "let the pointer wrap round the screens, or stop it"
+msgstr ""

@@ -85,6 +85,10 @@ class FakeClient:
         self._check()
         self.calls.append(("jump_mouse",))
 
+    def toggle_cursorwrap(self) -> None:
+        self._check()
+        self.calls.append(("toggle_cursorwrap",))
+
     def lightswitch_toggle(self) -> None:
         self._check()
         self.calls.append(("lightswitch_toggle",))
@@ -472,3 +476,17 @@ class TestMouseJump:
         assert status == 1
         assert "Mouse Jump is switched off in TuxToys." in err
         assert "tuxtoys modules enable mousejump" in err
+
+
+class TestCursorWrap:
+    def test_toggles_it_while_it_is_on(self, client: FakeClient) -> None:
+        client.infos = [AWAKE, ModuleInfo("cursorwrap", "CursorWrap", "", "on", "")]
+        assert run(client, "cursorwrap")[0] == 0
+        assert client.calls == [("toggle_cursorwrap",)]
+
+    def test_says_how_to_switch_it_on(self, client: FakeClient) -> None:
+        client.infos = [AWAKE]
+        status, _out, err = run(client, "cursorwrap")
+        assert status == 1
+        assert "CursorWrap is switched off in TuxToys." in err
+        assert "tuxtoys modules enable cursorwrap" in err
