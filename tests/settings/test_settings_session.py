@@ -1178,10 +1178,11 @@ def test_mouse_jump_part_shows_and_saves_its_settings(client: FakeClient) -> Non
     page.width.content_widget.set_value(1200)
     assert client.jump_calls[-1] == {"width": 1200}
     assert all(not r.get_reveal_child() for r in page.custom_revealers)
-    page.style.content_widget.set_active_id("bezelled")
+    # Only what differs from the custom style's settings is sent; they start as Bezelled's.
+    page.style.content_widget.set_active_id("compact")
     page._copy_to_custom()
     assert client.jump_calls[-1]["style"] == "custom"
-    assert client.jump_calls[-1]["custom_bezel"] == 12
+    assert client.jump_calls[-1]["custom_bezel"] == 0
     assert all(r.get_reveal_child() for r in page.custom_revealers)
     assert not page.copy_revealer.get_reveal_child()
 
