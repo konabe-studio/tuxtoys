@@ -187,6 +187,15 @@ click where you want the pointer to be: handy on large or several screens.
   custom style of your own colors and borders, and the largest size the picture may take.
 - Escape or a click outside puts it away; it only moves the pointer, it does not click.
 
+### CursorWrap
+
+Press Super+Alt+U, and the pointer goes out at one edge of your screens and comes back
+in at the other, as on a globe; press it again to stop.
+
+- **Only the outer edges:** where two monitors meet, the pointer crosses as usual.
+- **Your choice:** across, up and down, or both; always, or only while Ctrl or Shift is
+  held; not while dragging, and not with a single monitor if you like.
+
 ### File Locksmith
 
 Right-click a file or folder in Nemo and choose **What is using this?** to see which of

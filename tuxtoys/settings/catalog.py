@@ -55,6 +55,7 @@ TOOLS = (
         "mouseutilities",
     ),
     Tool("mousejump", "Mouse Jump", "input", "go-jump-symbolic", "mouseutilities"),
+    Tool("cursorwrap", "CursorWrap", "input", "object-flip-horizontal-symbolic", "mouseutilities"),
 )
 
 

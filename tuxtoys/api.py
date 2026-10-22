@@ -197,6 +197,14 @@ MOUSEJUMP_SETTINGS = {
     "custom_screen1": "s",
     "custom_screen2": "s",
 }
+CURSORWRAP_SETTINGS = {
+    "shortcut": "b",
+    "auto_activate": "b",
+    "not_while_dragging": "b",
+    "mode": "s",
+    "activation": "s",
+    "not_with_one_monitor": "b",
+}
 # Every module's settings types, by module id, for clients that send settings.
 MODULE_SETTINGS = {
     "awake": AWAKE_SETTINGS,
@@ -215,6 +223,7 @@ MODULE_SETTINGS = {
     "mousehighlighter": MOUSEHIGHLIGHTER_SETTINGS,
     "crosshairs": CROSSHAIRS_SETTINGS,
     "mousejump": MOUSEJUMP_SETTINGS,
+    "cursorwrap": CURSORWRAP_SETTINGS,
 }
 
 
