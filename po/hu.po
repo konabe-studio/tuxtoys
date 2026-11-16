@@ -4233,3 +4233,43 @@ msgstr "Bejelentkezéstől kezdve körbefuttat, gyorsbillentyű nélkül."
 #: tuxtoys/cli.py
 msgid "let the pointer wrap round the screens, or stop it"
 msgstr "a mutató körbefuttatása a képernyőkön, vagy leállítása"
+
+#: tuxtoys/modules/cursorhide/module.py tuxtoys/settings/catalog.py tuxtoys/settings/mouseutilities_page.py
+msgid "CursorHide"
+msgstr "CursorHide"
+
+#: tuxtoys/modules/cursorhide/module.py
+msgid "Hides the pointer while you type, or once it rests."
+msgstr "Elrejti a mutatót gépelés közben, vagy ha nem mozdul."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Hides the pointer while you type, or once it rests. It shows again when you move the mouse, click or scroll."
+msgstr "Elrejti a mutatót gépelés közben, vagy ha nem mozdul. Az egér mozgatására, kattintásra vagy görgetésre újra megjelenik."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Use CursorHide"
+msgstr "CursorHide használata"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Hide it while you type"
+msgstr "Elrejtés gépelés közben"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Ctrl, Shift, Alt and Super alone do not count."
+msgstr "A Ctrl, a Shift, az Alt és a Super magában nem számít."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Hide it once it rests"
+msgstr "Elrejtés, ha nem mozdul"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "When the pointer has not moved for a while."
+msgstr "Ha a mutató egy ideje nem mozdult."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Rest before hiding (s)"
+msgstr "Várakozás elrejtés előtt (mp)"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "How long the pointer has to rest before it hides."
+msgstr "Mennyi ideig kell a mutatónak mozdulatlanul állnia, mielőtt eltűnik."

@@ -196,6 +196,17 @@ in at the other, as on a globe; press it again to stop.
 - **Your choice:** across, up and down, or both; always, or only while Ctrl or Shift is
   held; not while dragging, and not with a single monitor if you like.
 
+### CursorHide
+
+Switch it on, and the pointer gets out of the way while you type; move the mouse, click
+or scroll, and it is back.
+
+- **While you type:** any key but Ctrl, Shift, Alt and Super alone hides it.
+- **Once it rests,** if you like: after 1 to 60 seconds without moving, 5 to start with.
+- **Not by accident:** a nudge of a few pixels leaves it hidden.
+- It knows only that a key was pressed, never which one, with the other mouse tools'
+  helper, and nothing is kept or sent anywhere.
+
 ### File Locksmith
 
 Right-click a file or folder in Nemo and choose **What is using this?** to see which of

@@ -3,7 +3,7 @@ pointer and the modifier keys once, hands every event to each tool, and draws wh
 for, until the daemon stops it. Started by the daemon with a --tool id=settings for each,
 not by hand. Its name on the session bus takes the tools' shortcuts: `tuxtoys findmymouse`,
 `tuxtoys mousehighlighter`, `tuxtoys crosshairs`, `tuxtoys glidingcursor`,
-`tuxtoys mousejump` and `tuxtoys cursorwrap`.
+`tuxtoys mousejump` and `tuxtoys cursorwrap`. CursorHide has no shortcut.
 """
 
 import argparse
@@ -16,7 +16,14 @@ from typing import Any
 
 log = logging.getLogger("tuxtoys-mouse-utilities")
 
-TOOLS = ("findmymouse", "mousehighlighter", "crosshairs", "mousejump", "cursorwrap")
+TOOLS = (
+    "findmymouse",
+    "mousehighlighter",
+    "crosshairs",
+    "mousejump",
+    "cursorwrap",
+    "cursorhide",
+)
 INTERFACE_XML = """
 <node>
   <interface name="{interface}">
@@ -108,6 +115,11 @@ def main(argv: list[str] | None = None) -> int:
         from tuxtoys.mouseutilities.cursorwrap import CursorWrapTool
 
         running["cursorwrap"] = CursorWrapTool(WrapOptions.read(tools["cursorwrap"]))
+    if "cursorhide" in tools:
+        from tuxtoys.modules.cursorhide.options import Options as HideOptions
+        from tuxtoys.mouseutilities.cursorhide import CursorHideTool
+
+        running["cursorhide"] = CursorHideTool(HideOptions.read(tools["cursorhide"]))
 
     def handle(event: Event) -> None:
         """In the watcher's thread: every tool hears every event."""
@@ -153,6 +165,10 @@ def main(argv: list[str] | None = None) -> int:
             from tuxtoys.modules.findmymouse.options import Options
 
             running[tool_id].configure(Options.read(found[tool_id]))
+        elif tool_id == "cursorhide":
+            from tuxtoys.modules.cursorhide.options import Options as HideOptions
+
+            running[tool_id].configure(HideOptions.read(found[tool_id]))
         elif tool_id == "cursorwrap":
             from tuxtoys.modules.cursorwrap.options import Options as WrapOptions
 
