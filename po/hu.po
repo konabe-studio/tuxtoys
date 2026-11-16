@@ -4238,38 +4238,38 @@ msgstr "a mutató körbefuttatása a képernyőkön, vagy leállítása"
 msgid "CursorHide"
 msgstr "CursorHide"
 
-#: tuxtoys/modules/cursorhide/module.py
-msgid "Hides the pointer while you type, or once it rests."
-msgstr "Elrejti a mutatót gépelés közben, vagy ha nem mozdul."
-
-#: tuxtoys/settings/mouseutilities_page.py
-msgid "Hides the pointer while you type, or once it rests. It shows again when you move the mouse, click or scroll."
-msgstr "Elrejti a mutatót gépelés közben, vagy ha nem mozdul. Az egér mozgatására, kattintásra vagy görgetésre újra megjelenik."
-
 #: tuxtoys/settings/mouseutilities_page.py
 msgid "Use CursorHide"
 msgstr "CursorHide használata"
 
-#: tuxtoys/settings/mouseutilities_page.py
-msgid "Hide it while you type"
-msgstr "Elrejtés gépelés közben"
+#: tuxtoys/modules/cursorhide/module.py tuxtoys/settings/mouseutilities_page.py
+msgid "Hides the mouse pointer after keyboard input, inactivity, or both."
+msgstr "Elrejti az egérmutatót billentyűzetbevitel, inaktivitás vagy mindkettő után."
 
 #: tuxtoys/settings/mouseutilities_page.py
-msgid "Ctrl, Shift, Alt and Super alone do not count."
-msgstr "A Ctrl, a Shift, az Alt és a Super magában nem számít."
+msgid "Choose one or both ways to hide the pointer."
+msgstr "Válasszon egy vagy mindkét módot a mutató elrejtésére."
 
 #: tuxtoys/settings/mouseutilities_page.py
-msgid "Hide it once it rests"
-msgstr "Elrejtés, ha nem mozdul"
+msgid "Hide after keyboard input"
+msgstr "Elrejtés billentyűzetbevitel után"
 
 #: tuxtoys/settings/mouseutilities_page.py
-msgid "When the pointer has not moved for a while."
-msgstr "Ha a mutató egy ideje nem mozdult."
+msgid "Modifier keys alone are left out."
+msgstr "A módosító billentyűk magukban figyelmen kívül maradnak."
 
 #: tuxtoys/settings/mouseutilities_page.py
-msgid "Rest before hiding (s)"
-msgstr "Várakozás elrejtés előtt (mp)"
+msgid "Hide when the pointer is inactive"
+msgstr "Elrejtés, ha a mutató inaktív"
 
 #: tuxtoys/settings/mouseutilities_page.py
-msgid "How long the pointer has to rest before it hides."
-msgstr "Mennyi ideig kell a mutatónak mozdulatlanul állnia, mielőtt eltűnik."
+msgid "The pointer shows again when you move the mouse on purpose, press a button or turn the wheel."
+msgstr "A mutató ismét megjelenik szándékos mozgatás, egérgomb megnyomása vagy a görgő használata után."
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Inactivity delay (seconds)"
+msgstr "Inaktivitási késleltetés (másodperc)"
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Choose a delay from 1 to 60 seconds."
+msgstr "Válasszon 1 és 60 másodperc közötti késleltetést."

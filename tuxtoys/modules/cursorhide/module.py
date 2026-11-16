@@ -17,7 +17,9 @@ from tuxtoys.modules.mouseutilities.helper import MouseHelper, shared
 class CursorHide(Module):
     id: ClassVar[str] = "cursorhide"
     name: ClassVar[str] = _("CursorHide")
-    description: ClassVar[str] = _("Hides the pointer while you type, or once it rests.")
+    description: ClassVar[str] = _(
+        "Hides the mouse pointer after keyboard input, inactivity, or both."
+    )
     settings_types: ClassVar[Mapping[str, str]] = CURSORHIDE_SETTINGS
 
     def __init__(self, helper: MouseHelper | None = None) -> None:
