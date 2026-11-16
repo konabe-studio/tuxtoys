@@ -205,6 +205,11 @@ CURSORWRAP_SETTINGS = {
     "activation": "s",
     "not_with_one_monitor": "b",
 }
+CURSORHIDE_SETTINGS = {
+    "after_typing": "b",
+    "after_rest": "b",
+    "delay": "u",
+}
 # Every module's settings types, by module id, for clients that send settings.
 MODULE_SETTINGS = {
     "awake": AWAKE_SETTINGS,
@@ -224,6 +229,7 @@ MODULE_SETTINGS = {
     "crosshairs": CROSSHAIRS_SETTINGS,
     "mousejump": MOUSEJUMP_SETTINGS,
     "cursorwrap": CURSORWRAP_SETTINGS,
+    "cursorhide": CURSORHIDE_SETTINGS,
 }
 
 

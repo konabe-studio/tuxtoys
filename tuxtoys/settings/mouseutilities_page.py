@@ -16,6 +16,8 @@ and the gliding cursor's shortcut and speeds.
 Mouse Jump's part: its shortcut, the largest size of its preview, and the preview's style.
 
 CursorWrap's part: its shortcut, whether it starts on, and when the pointer wraps.
+
+CursorHide's part: hiding while typing, hiding once the pointer rests, and after how long.
 """
 
 from collections.abc import Callable, Mapping
@@ -41,6 +43,7 @@ from tuxtoys.api import ModuleInfo, ModuleOff, NotRunning, Refused  # noqa: E402
 from tuxtoys.core.i18n import _  # noqa: E402
 from tuxtoys.core.shortcut import CustomShortcut  # noqa: E402
 from tuxtoys.modules.crosshairs import options as crosshairs  # noqa: E402
+from tuxtoys.modules.cursorhide import options as cursorhide  # noqa: E402
 from tuxtoys.modules.cursorwrap import options as cursorwrap  # noqa: E402
 from tuxtoys.modules.findmymouse import options as findmymouse  # noqa: E402
 from tuxtoys.modules.mousehighlighter import options as highlighter  # noqa: E402
@@ -1054,6 +1057,69 @@ class CursorWrapPart(MousePart):
             self._loading = False
 
 
+class CursorHidePart(MousePart):
+    module_id = "cursorhide"
+
+    def __init__(
+        self, page: SettingsPage, client: Client, show_error: Callable[[str], None]
+    ) -> None:
+        super().__init__(page, client, show_error)
+        self.first = self.top(
+            _("CursorHide"),
+            _(
+                "Hides the pointer while you type, or once it rests. It shows again when you"
+                " move the mouse, click or scroll."
+            ),
+            _("Use CursorHide"),
+        )
+        self.behavior_section = page.add_section(_("Behavior"), "")
+        self.flags = {}
+        for key, label, detail in (
+            (
+                "after_typing",
+                _("Hide it while you type"),
+                _("Ctrl, Shift, Alt and Super alone do not count."),
+            ),
+            (
+                "after_rest",
+                _("Hide it once it rests"),
+                _("When the pointer has not moved for a while."),
+            ),
+        ):
+            row = Switch(label)
+            with_detail(row, detail)
+            row.content_widget.connect("notify::active", self._on_flag, key)
+            self.behavior_section.add_row(row)
+            self.flags[key] = row
+        self.delay = number_row(
+            _("Rest before hiding (s)"),
+            _("How long the pointer has to rest before it hides."),
+            cursorhide.DELAY_LIMITS,
+        )
+        self.delay.content_widget.connect("value-changed", self._on_number, "delay")
+        self.behavior_section.add_row(self.delay)
+        self.sections = (self.behavior_section,)
+
+    def show_settings(self, settings: object) -> None:
+        if not isinstance(settings, Mapping):
+            return
+        options = cursorhide.Options.read(settings)
+        self._shown = dict(options.settings())
+        self._loading = True
+        try:
+            for key, row in self.flags.items():
+                row.content_widget.set_active(getattr(options, key))
+            self.delay.content_widget.set_value(options.delay)
+            self.delay.set_sensitive(options.after_rest)
+        finally:
+            self._loading = False
+
+    def _on_flag(self, switch: Gtk.Switch, spec: object, key: str) -> None:
+        if key == "after_rest":
+            self.delay.set_sensitive(switch.get_active())
+        super()._on_flag(switch, spec, key)
+
+
 class MouseUtilitiesPage(SettingsPage):
     def __init__(
         self,
@@ -1115,6 +1181,7 @@ class MouseUtilitiesPage(SettingsPage):
                 cursorwrap.SHORTCUT_NAME, cursorwrap.SHORTCUT_COMMAND, cursorwrap.SHORTCUT_KEYS
             ),
         )
+        self.cursorhide = CursorHidePart(self, client, show_error)
         self.parts: dict[str, MousePart] = {
             part.module_id: part
             for part in (
@@ -1123,6 +1190,7 @@ class MouseUtilitiesPage(SettingsPage):
                 self.crosshairs,
                 self.mousejump,
                 self.cursorwrap,
+                self.cursorhide,
             )
         }
         self.refresh()

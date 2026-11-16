@@ -21,4 +21,5 @@ AVAILABLE: dict[str, str] = {
     "crosshairs": "tuxtoys.modules.crosshairs.module:Crosshairs",
     "mousejump": "tuxtoys.modules.mousejump.module:MouseJump",
     "cursorwrap": "tuxtoys.modules.cursorwrap.module:CursorWrap",
+    "cursorhide": "tuxtoys.modules.cursorhide.module:CursorHide",
 }

@@ -4069,3 +4069,43 @@ msgstr ""
 #: tuxtoys/cli.py
 msgid "let the pointer wrap round the screens, or stop it"
 msgstr ""
+
+#: tuxtoys/modules/cursorhide/module.py tuxtoys/settings/catalog.py tuxtoys/settings/mouseutilities_page.py
+msgid "CursorHide"
+msgstr ""
+
+#: tuxtoys/modules/cursorhide/module.py
+msgid "Hides the pointer while you type, or once it rests."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Hides the pointer while you type, or once it rests. It shows again when you move the mouse, click or scroll."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Use CursorHide"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Hide it while you type"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Ctrl, Shift, Alt and Super alone do not count."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Hide it once it rests"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "When the pointer has not moved for a while."
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "Rest before hiding (s)"
+msgstr ""
+
+#: tuxtoys/settings/mouseutilities_page.py
+msgid "How long the pointer has to rest before it hides."
+msgstr ""

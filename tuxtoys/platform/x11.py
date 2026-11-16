@@ -310,3 +310,44 @@ def pointer_hidden() -> bool:
         return False
     finally:
         screen.close()
+
+
+class HiddenCursor:
+    """The pointer hidden on the whole screen through the XFIXES extension, or shown again,
+    as unclutter-xfixes does it. X keeps it hidden only while this connection is open, so a
+    helper that stops or crashes never leaves the pointer hidden. Used from one thread.
+    """
+
+    def __init__(self) -> None:
+        self._display: Any = None
+        self.hidden = False
+
+    def set_hidden(self, hidden: bool) -> None:
+        """Hides or shows the pointer; asking for what is already so does nothing. Raises
+        RuntimeError when the X server has no XFIXES extension.
+        """
+        if hidden == self.hidden:
+            return
+        if self._display is None:
+            from Xlib import display
+
+            found = display.Display()
+            if not found.has_extension("XFIXES"):
+                found.close()
+                raise RuntimeError("the X server has no XFIXES extension")
+            found.xfixes_query_version()
+            self._display = found
+        root = self._display.screen().root
+        if hidden:
+            root.xfixes_hide_cursor()
+        else:
+            root.xfixes_show_cursor()
+        self._display.sync()
+        self.hidden = hidden
+
+    def close(self) -> None:
+        """Shows the pointer again and lets go of the connection."""
+        if self._display is not None:
+            self._display.close()
+            self._display = None
+        self.hidden = False
