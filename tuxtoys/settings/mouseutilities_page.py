@@ -1066,24 +1066,26 @@ class CursorHidePart(MousePart):
         super().__init__(page, client, show_error)
         self.first = self.top(
             _("CursorHide"),
-            _(
-                "Hides the pointer while you type, or once it rests. It shows again when you"
-                " move the mouse, click or scroll."
-            ),
+            _("Hides the mouse pointer after keyboard input, inactivity, or both."),
             _("Use CursorHide"),
         )
-        self.behavior_section = page.add_section(_("Behavior"), "")
+        self.behavior_section = page.add_section(
+            _("Activation and behavior"), _("Choose one or both ways to hide the pointer.")
+        )
         self.flags = {}
         for key, label, detail in (
             (
                 "after_typing",
-                _("Hide it while you type"),
-                _("Ctrl, Shift, Alt and Super alone do not count."),
+                _("Hide after keyboard input"),
+                _("Modifier keys alone are left out."),
             ),
             (
                 "after_rest",
-                _("Hide it once it rests"),
-                _("When the pointer has not moved for a while."),
+                _("Hide when the pointer is inactive"),
+                _(
+                    "The pointer shows again when you move the mouse on purpose, press a"
+                    " button or turn the wheel."
+                ),
             ),
         ):
             row = Switch(label)
@@ -1092,8 +1094,8 @@ class CursorHidePart(MousePart):
             self.behavior_section.add_row(row)
             self.flags[key] = row
         self.delay = number_row(
-            _("Rest before hiding (s)"),
-            _("How long the pointer has to rest before it hides."),
+            _("Inactivity delay (seconds)"),
+            _("Choose a delay from 1 to 60 seconds."),
             cursorhide.DELAY_LIMITS,
         )
         self.delay.content_widget.connect("value-changed", self._on_number, "delay")
