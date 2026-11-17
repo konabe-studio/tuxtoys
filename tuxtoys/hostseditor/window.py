@@ -158,6 +158,7 @@ class EntryRow(Gtk.ListBoxRow):
         self.entry = entry
         self.doubled = doubled
         box = Gtk.Box(spacing=12, margin_start=12, margin_end=6, margin_top=4, margin_bottom=4)
+        columns = window.columns
         sign = Gtk.Image.new_from_icon_name(WARNING_ICON, Gtk.IconSize.MENU)
         sign.get_style_context().add_class("tuxtoys-warning")
         sign.set_tooltip_text(problem or None)
@@ -176,21 +177,30 @@ class EntryRow(Gtk.ListBoxRow):
         )
         self.comment.get_style_context().add_class("dim-label")
         box.pack_start(self.comment, True, True, 0)
+        # The ping's answer has its place in every row, empty until there is one, so that a
+        # row with an answer lines up with the rest.
+        tail = Gtk.Box(spacing=12)
+        reply = Gtk.Image(pixel_size=16)
         answer = {
             True: ("network-transmit-receive-symbolic", _("It answered the ping.")),
             False: ("network-offline-symbolic", _("No answer to the ping.")),
         }.get(ping)
         if answer:
-            reply = Gtk.Image.new_from_icon_name(answer[0], Gtk.IconSize.MENU)
+            reply.set_from_icon_name(answer[0], Gtk.IconSize.MENU)
             reply.set_tooltip_text(answer[1])
-            box.pack_start(reply, False, False, 0)
+        tail.pack_start(reply, False, False, 0)
         self.switch = Gtk.Switch(active=entry.active, valign=Gtk.Align.CENTER)
         self.switch.set_tooltip_text(_("Active"))
         self.switch.connect(
             "notify::active", lambda switch, _spec: window.set_active(self, switch.get_active())
         )
-        box.pack_start(self.switch, False, False, 0)
-        box.pack_start(self._menu_button(window), False, False, 0)
+        tail.pack_start(self.switch, False, False, 0)
+        tail.pack_start(self._menu_button(window), False, False, 0)
+        box.pack_start(tail, False, False, 0)
+        for group, widget in zip(
+            columns, (self.address, self.hosts, self.comment, tail), strict=True
+        ):
+            group.add_widget(widget)
         self.add(box)
 
     def _menu_button(self, window: "HostsWindow") -> Gtk.MenuButton:
@@ -239,6 +249,11 @@ class HostsWindow(Gtk.ApplicationWindow):
         self.backed_up = False
         self.pings: dict[str, bool | None] = {}
         self._close_after_save = False
+        # Each row is a box of its own; these make the address, hosts, comment and the rest
+        # of every row, and the headings, the same width, so the columns line up.
+        self.columns = tuple(
+            Gtk.SizeGroup(mode=Gtk.SizeGroupMode.HORIZONTAL) for _column in range(4)
+        )
 
         css = Gtk.CssProvider()
         css.load_from_data(CSS)
@@ -320,17 +335,22 @@ class HostsWindow(Gtk.ApplicationWindow):
     def _list(self) -> Gtk.Widget:
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         heads = Gtk.Box(spacing=12, margin_start=12 + 16 + 12, margin_end=6)
-        for text, width, expand in (
-            (_("Address"), 18, False),
-            (_("Hosts"), -1, True),
-            (_("Comment"), 16, True),
+        for group, text, width, expand in zip(
+            self.columns[:3],
+            (_("Address"), _("Hosts"), _("Comment")),
+            (18, -1, 16),
+            (False, True, True),
+            strict=True,
         ):
             label = Gtk.Label(xalign=0, width_chars=width)
             label.set_markup(bold(text))
             heads.pack_start(label, expand, expand, 0)
-        active = Gtk.Label(margin_end=40)
+            group.add_widget(label)
+        # Over the switches: past the ping's place.
+        active = Gtk.Label(xalign=0, margin_start=16 + 12)
         active.set_markup(bold(_("Active")))
         heads.pack_start(active, False, False, 0)
+        self.columns[-1].add_widget(active)
         box.pack_start(heads, False, False, 0)
         self.list = Gtk.ListBox(selection_mode=Gtk.SelectionMode.SINGLE)
         self.list.set_filter_func(self._shown)
@@ -413,7 +433,7 @@ class HostsWindow(Gtk.ApplicationWindow):
 
     def show_entries(self) -> None:
         for row in self.list.get_children():
-            self.list.remove(row)
+            row.destroy()  # out of the columns' size groups too, not only out of the list
         doubled = duplicates(self.hosts, self.options.loopback_duplicates)
         for index, entry in self.hosts.entries():
             problem = self._problem(index, entry, doubled)
