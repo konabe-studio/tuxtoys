@@ -53,11 +53,14 @@ Brings in a shared overlay and screen region selection.
 
 Brings in global key monitoring.
 
+Mouse Utilities is done, released as 0.5.0: Find My Mouse, Mouse Highlighter, Mouse
+Pointer Crosshairs, Mouse Jump, CursorWrap and CursorHide.
+
 | Tool | What it does |
 |---|---|
 | Advanced Paste | Pastes clipboard content as plain text, JSON or Markdown |
 | Quick Accent | Offers accented characters on a long key press |
-| Mouse Utilities | Pointer finder, click highlighter, crosshairs and pointer jump |
+| Mouse Utilities | Pointer finder, click highlighter, crosshairs, pointer jump, wrap and hide |
 | PowerDisplay | Brightness, contrast and input of external monitors in one panel (DDC/CI) |
 | Peek | Previews a file with a single key |
 | File Explorer Add-ons | Thumbnails and previews for SVG, Markdown and source code in Nemo |
