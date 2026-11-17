@@ -3,6 +3,7 @@ display: xvfb in CI, the desktop otherwise.
 """
 
 import signal
+import time
 from collections.abc import Callable, Sequence
 
 import pytest
@@ -113,4 +114,21 @@ def test_a_process_one_may_not_end_says_so(world: World, monkeypatch: pytest.Mon
     choose_first(shown)
     shown.end.clicked()
     assert told == ["You may not end soffice.bin."]
+    shown.destroy()
+
+
+def test_opens_with_nothing_selected(world: World) -> None:
+    # The path takes the focus first, and GTK selects a label's text when it does; the
+    # window clears it once the window is on the screen.
+    shown = open_window(world)
+    shown.present()
+    assert shown.where is not None
+    deadline = time.monotonic() + 2
+    while shown.where.get_selection_bounds()[0] and time.monotonic() < deadline:
+        while Gtk.events_pending():
+            Gtk.main_iteration()
+        time.sleep(0.02)
+    assert not shown.where.get_selection_bounds()[0]
+    assert shown.list.get_selection().count_selected_rows() == 0
+    assert not shown.end.get_sensitive()
     shown.destroy()
