@@ -15,6 +15,8 @@ so it follows your theme and behaves like the rest of the system. Where Cinnamon
 does something well, TuxToys leaves it alone, and each tool says what it adds over the
 built-in one.
 
+![The TuxToys settings window on its Home page: the tools in a sidebar by group, and a list of every tool with a switch to turn it on or off.](docs/images/overview.png)
+
 > **Status: early development.** Release 0.5.0 carries nineteen tools, from Awake to the
 > mouse tools of the fourth milestone. Up to 0.2.0, TuxToys was called MintToys.
 
@@ -24,6 +26,8 @@ built-in one.
 
 Keeps your computer from going to sleep while a long download, backup or render runs,
 without touching your power settings.
+
+![Awake's menu from the coffee cup in the panel, reading "Awake is on for 1 h 30 min more", with the modes, Keep the screen on, Turn off and Settings.](docs/images/awake.png)
 
 - **Until you turn it off**, **for a set time** (30 minutes, 1 hour, 2 hours or your own),
   or **until a time of day**, even one past midnight.
@@ -40,6 +44,8 @@ without touching your power settings.
 Switches the desktop between Linux Mint's dark mode and its day mode (Mixed or Light),
 the same way the Themes window does.
 
+![Animation: Switch now is pressed on Light Switch's settings page, the window turns dark, and a second press turns it light again.](docs/images/lightswitch.gif)
+
 - **On a schedule:** Night Light's, sunset to sunrise included, or hours of your own.
 - **Right now:** Super+Ctrl+Shift+D switches until the schedule next changes.
 
@@ -47,6 +53,8 @@ the same way the Themes window does.
 
 Edits `/etc/hosts`, which maps names to addresses on this computer, in a window: from
 its page in the settings window, the applications menu or `tuxtoys hosts`.
+
+![Hosts File Editor with four example entries filtered by .test: one switched off, and two sharing the host name app.test, both marked with a warning sign.](docs/images/hosts.png)
 
 - **Entries** with their address, host names and comment, each switched on or off, added,
   edited, duplicated, moved and deleted. A bad address or host name, or a host name
@@ -62,6 +70,8 @@ its page in the settings window, the applications menu or `tuxtoys hosts`.
 Sets your environment variables, profiles of them, and the system's, in a window: from
 its page in the settings window, the applications menu or `tuxtoys env`.
 
+![Environment Variables with the profile Web work switched on, two user variables, EDITOR and PATH, and Applied variables listing PATH first.](docs/images/envvars.png)
+
 - **Your variables** are loaded when you log in, through one line TuxToys adds to
   `~/.xsessionrc`, and in every new terminal at once, through one in `~/.bashrc`. A value
   can build on another, as `$HOME/bin:$PATH`, and a list such as PATH is edited one
@@ -75,6 +85,8 @@ its page in the settings window, the applications menu or `tuxtoys env`.
 
 Keeps a window above all the others, with Muffin's own Super+Ctrl+T.
 
+![Animation: Super+Ctrl+T pins Text Editor over Files with a blue frame, Super+Ctrl+Page Down makes it see-through, it stays above Files when Files is clicked, and Super+Ctrl+T lets it go.](docs/images/alwaysontop.gif)
+
 - **A frame** around every pinned window, in your theme's accent color or a color of your
   own, with its width, opacity and rounded corners to set.
 - **Opacity:** Super+Ctrl+Page Up and Page Down make a pinned window more or less opaque.
@@ -86,6 +98,8 @@ Keeps a window above all the others, with Muffin's own Super+Ctrl+T.
 Press Super+Shift+C, point at any color on the screen and click: it is copied, in HEX or
 any of sixteen formats, or one of your own.
 
+![Animation: Super+Shift+C over a picture, the color's label beside the pointer, the magnifier after a scroll up, and after a click the editor showing the color in HEX, RGB, HSL, HSV and CMYK.](docs/images/colorpicker.gif)
+
 - **A label beside the pointer** shows the color and, if you like, its name; scroll up
   for a magnifier.
 - **The editor** keeps the last twenty colors, shows each in the formats you choose with
@@ -96,6 +110,8 @@ any of sixteen formats, or one of your own.
 
 Press Super+Ctrl+Shift+M and pick a tool from the bar at the top of the screen to measure
 what is on it, in pixels.
+
+![Animation: Screen Ruler's bar at the top of the screen, Spacing measuring the space at the gap between two buttons of a window, then Bounds measuring a box dragged over one of them.](docs/images/screenruler.gif)
 
 - **Bounds:** drag a box to measure it; hold Shift to keep several.
 - **Spacing:** point anywhere and see the space to the edges around it, both ways or
@@ -109,6 +125,8 @@ Press Super+Shift+T and drag over any text on the screen, in a picture, a video 
 window that will not let you select it: the text is copied. A click copies the one word
 under the pointer.
 
+![Animation: Super+Shift+T, a box dragged over a picture of opening hours, and Ctrl+V pasting its four lines as text into Text Editor.](docs/images/textextractor.gif)
+
 - **On one line or as a table:** the bar at the top of the screen joins the lines, or
   lays the text out in columns with tabs, ready to paste into a spreadsheet.
 - **In your language:** the text is read by tesseract, in any language whose
@@ -120,6 +138,8 @@ under the pointer.
 Press Super+Shift+/ (Super+Shift+6 on a Hungarian keyboard) to see the keyboard
 shortcuts you have: Cinnamon's own, as its Keyboard settings list them, the ones TuxToys'
 tools use, and the active app's, for Nemo, Xed, the Terminal and Firefox.
+
+![Shortcut Guide on the Cinnamon tab, with Show desktop and Run dialog pinned at the top, above Cinnamon's general shortcuts.](docs/images/shortcutguide.png)
 
 - **In Mint's own words:** Cinnamon's, Nemo's, Xed's and the Terminal's shortcuts carry
   the labels of their own settings and menus, in your language.
@@ -139,6 +159,8 @@ Press the left Ctrl twice to see where the pointer is: the screen dims but for a
 spotlight around it, which follows it. A click or a key puts it away, and so does a
 second of stillness once you have moved the mouse.
 
+![Animation: the left Ctrl pressed twice dims the screen but for a spotlight around the pointer, which follows it and then goes.](docs/images/findmymouse.gif)
+
 - **Ways to start it:** the left or the right Ctrl twice, a shake of the mouse, or a
   keyboard shortcut.
 - **Out of the way:** it does not start over a full-screen window or while Feral
@@ -155,6 +177,8 @@ second of stillness once you have moved the mouse.
 Press Super+Shift+H, and every click shows on the screen until you press it again:
 handy for recording the screen or showing something to others.
 
+![Animation: Super+Shift+H, then three left clicks shown as yellow ripples and a right click shown in blue.](docs/images/mousehighlighter.gif)
+
 - **Three styles, as in PowerToys:** a ripple going out from each click, a circle under
   the pointer while a button is held, or the screen dimmed around the pointer.
 - **Each button its own color:** the left and the right, and one under the pointer the
@@ -167,6 +191,8 @@ handy for recording the screen or showing something to others.
 
 Press Super+Alt+P for crosshairs through the pointer, out to the edges of the screen,
 and again to put them away: easy to follow on a large screen or a recording.
+
+![Animation: Super+Alt+P draws red crosshairs through the pointer, out to the edges of the screen, and they follow it as it moves.](docs/images/crosshairs.gif)
 
 - **Their look:** color, opacity, the gap around the pointer, thickness, a border, only
   one of the two lines, or lines of a fixed length.
@@ -181,6 +207,8 @@ and again to put them away: easy to follow on a large screen or a recording.
 Press Super+Shift+D for a small picture of all your screens around the pointer, and
 click where you want the pointer to be: handy on large or several screens.
 
+![Animation: Super+Shift+D shows a small picture of the screen around the pointer, and a click on it sends the pointer to that place.](docs/images/mousejump.gif)
+
 - **Keys too:** 1 to 9 jump to that screen, P to the primary one, Left and Right to the
   one before or after, Home and End to the first and the last.
 - **Its look:** compact, or with a frame round each screen, as PowerToys has them, or a
@@ -191,6 +219,8 @@ click where you want the pointer to be: handy on large or several screens.
 
 Press Super+Alt+U, and the pointer goes out at one edge of your screens and comes back
 in at the other, as on a globe; press it again to stop.
+
+![Animation: the pointer goes out at the right edge of the screen and comes back in at the left.](docs/images/cursorwrap.gif)
 
 - **Only the outer edges:** where two monitors meet, the pointer crosses as usual.
 - **Your choice:** across, up and down, or both; always, or only while Ctrl or Shift is
@@ -212,10 +242,14 @@ or scroll, and it is back.
 Right-click a file or folder in Nemo and choose **What is using this?** to see which of
 your processes hold it open, and end them if you need to.
 
+![Nemo's right-click menu on notes.txt with What is using this?, and File Locksmith listing the tail process that holds the file open.](docs/images/locksmith.png)
+
 ### New+
 
 Makes files and folders from your own templates. Right-click inside a folder in Nemo and
 choose **New from template…**, pick a template and give the new item its name.
+
+![Nemo's right-click menu inside a folder with New from template…, and the New from template window with three templates, the first one 01. Weekly report.odt.](docs/images/newplus.png)
 
 - **Folder templates**, copied whole, such as a project skeleton.
 - **Variables in names**, if you want them: `$YYYY-$MM-$DD Notes.txt` becomes
@@ -231,6 +265,8 @@ choose **New from template…**, pick a template and give the new item its name.
 Choose one or more pictures in Nemo, right-click them and choose **Resize with Image
 Resizer**.
 
+![Image Resizer over three pictures selected in Nemo, with the Medium size picked.](docs/images/imageresizer.png)
+
 - **Sizes to pick from**, Small, Medium, Large and Phone to start with, or one of your own
   in pixels, percent, centimeters or inches. Each one fits, fills or stretches.
 - **Copies beside the originals**, named `photo (Small).jpg` or as you set it, or the
@@ -241,6 +277,8 @@ Resizer**.
 ### Rename+
 
 Choose files or folders in Nemo, right-click them and choose **Rename with Rename+**.
+
+![Rename+ renaming eight photos with a regular expression and a counter: the preview turns IMG_2041.jpg into Holiday 2026-11-17 01.jpg, and so on to 08.](docs/images/renameplus.png)
 
 - **Search and replace** plain text or a regular expression, in the name, the extension or
   both, the first match or every one. Every new name shows in a preview before anything
@@ -256,6 +294,8 @@ TuxToys' penguin sits in the panel. A click on it opens **Quick Access**: the to
 have switched on that open something, such as Color Picker or Hosts File Editor, with
 the settings, the documentation and a bug report a click away. The General page of the
 settings can hide it.
+
+![The right end of the Cinnamon panel with TuxToys' penguin and Awake's cup, and Quick Access open above the penguin: Color Picker, Screen Ruler and Text Extractor, then Settings, Documentation and Report a bug.](docs/images/panel.png)
 
 Every tool except Awake starts switched off, so nothing on your desktop changes until you
 pick it. Everything planned next, grouped into milestones, is in the
