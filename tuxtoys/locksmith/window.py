@@ -52,10 +52,15 @@ class LocksmithWindow(Gtk.ApplicationWindow):
         self.heading = Gtk.Label(xalign=0, wrap=True)
         self.heading.set_markup(f"<b>{GLib.markup_escape_text(text.heading(self._targets))}</b>")
         box.pack_start(self.heading, False, False, 0)
+        self.where: Gtk.Label | None = None
         if len(self._targets) == 1:
-            where = Gtk.Label(label=self._targets[0], xalign=0, wrap=True, selectable=True)
-            where.get_style_context().add_class("dim-label")
-            box.pack_start(where, False, False, 0)
+            self.where = Gtk.Label(label=self._targets[0], xalign=0, wrap=True, selectable=True)
+            self.where.get_style_context().add_class("dim-label")
+            box.pack_start(self.where, False, False, 0)
+            # The path can be selected and copied, so it is the first to take the focus, and
+            # GTK selects a label's text as it does. Not the list instead: that would choose
+            # the first process, ready for End process.
+            self.connect("map-event", self._on_map)
 
         self.store = Gtk.ListStore(int, str, str)
         self.list = Gtk.TreeView(model=self.store)
@@ -91,6 +96,11 @@ class LocksmithWindow(Gtk.ApplicationWindow):
         self.add(box)
         box.show_all()
         self.refresh()
+
+    def _on_map(self, _window: Gtk.Window, _event: Gdk.Event) -> bool:
+        if self.where is not None:
+            self.where.select_region(0, 0)
+        return False
 
     def refresh(self) -> None:
         found = self._find(self._targets)
