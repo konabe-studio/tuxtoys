@@ -14,7 +14,13 @@ from collections.abc import Callable, Iterable
 from typing import Any
 
 from tuxtoys.inputwatch.detect import ButtonEvent, Event, Key, KeyEvent, Motion
-from tuxtoys.modules.alwaysontop.frame import Rect, step_opacity
+from tuxtoys.modules.alwaysontop.frame import (
+    BEFORE_PROPERTY,
+    Rect,
+    opacity_record,
+    recorded_opacity,
+    step_opacity,
+)
 
 type Changed = Callable[[dict[int, Rect], set[int]], None]
 
@@ -23,7 +29,9 @@ class AboveWindows:
     """Follows the windows kept above the others on the current workspace, and calls
     `changed` with their frames (decorations included) by X window id, and the ids of all
     open windows, whenever any of that changes. Windows of `excluded` applications, by
-    WM_CLASS, are let go of as soon as they are pinned.
+    WM_CLASS, are let go of as soon as they are pinned. A window let go of gets back the
+    opacity it had before the opacity shortcuts changed it, and so does every window at
+    `let_go()`.
     """
 
     def __init__(self, changed: Changed, excluded: Iterable[str] = ()) -> None:
@@ -33,6 +41,7 @@ class AboveWindows:
         from gi.repository import Wnck
 
         self._changed = changed
+        self._above_state = Wnck.WindowState.ABOVE
         self._excluded = {app.casefold() for app in excluded}
         self._screen = Wnck.Screen.get_default()
         self._screen.force_update()
@@ -67,11 +76,21 @@ class AboveWindows:
         names = (window.get_class_group_name(), window.get_class_instance_name())
         return any(name and name.casefold() in self._excluded for name in names)
 
+    def let_go(self) -> None:
+        """Puts back the opacity of every window, when the frames stop."""
+        restore_opacity(window.get_xid() for window in self._screen.get_windows())
+
     def _watch(self, window: Any, tell: bool = True) -> None:  # noqa: ANN401, a Wnck.Window
-        for signal in ("state-changed", "geometry-changed", "workspace-changed"):
+        window.connect("state-changed", self._on_state)
+        for signal in ("geometry-changed", "workspace-changed"):
             window.connect(signal, lambda *_: self.tell())
         if tell:
             self.tell()
+
+    def _on_state(self, window: Any, changed: Any, state: Any) -> None:  # noqa: ANN401, Wnck
+        if changed & self._above_state and not state & self._above_state:
+            restore_opacity([window.get_xid()])
+        self.tell()
 
 
 def step_active_opacity(up: bool) -> bool:
@@ -93,10 +112,42 @@ def step_active_opacity(up: bool) -> bool:
             return False
         opacity = screen.intern_atom("_NET_WM_WINDOW_OPACITY")
         current = window.get_full_property(opacity, Xatom.CARDINAL)
-        value = step_opacity(current.value[0] if current and current.value else None, up)
-        window.change_property(opacity, Xatom.CARDINAL, 32, [value])
+        had = current.value[0] if current and current.value else None
+        before = screen.intern_atom(BEFORE_PROPERTY)
+        if window.get_full_property(before, Xatom.CARDINAL) is None:
+            window.change_property(before, Xatom.CARDINAL, 32, opacity_record(had))
+        window.change_property(opacity, Xatom.CARDINAL, 32, [step_opacity(had, up)])
         screen.sync()
         return True
+    finally:
+        screen.close()
+
+
+def restore_opacity(xids: Iterable[int]) -> None:
+    """Gives these windows back the opacity they had before the opacity shortcuts first
+    changed it; a window they never changed, or one already gone, is left alone.
+    """
+    from Xlib import Xatom, display, error
+
+    screen = display.Display()
+    try:
+        opacity = screen.intern_atom("_NET_WM_WINDOW_OPACITY")
+        before = screen.intern_atom(BEFORE_PROPERTY)
+        for xid in xids:
+            window = screen.create_resource_object("window", xid)
+            try:
+                record = window.get_full_property(before, Xatom.CARDINAL)
+                if record is None:
+                    continue
+                value = recorded_opacity(list(record.value))
+                if value is None:
+                    window.delete_property(opacity)
+                else:
+                    window.change_property(opacity, Xatom.CARDINAL, 32, [value])
+                window.delete_property(before)
+                screen.sync()
+            except error.BadWindow:
+                continue
     finally:
         screen.close()
 

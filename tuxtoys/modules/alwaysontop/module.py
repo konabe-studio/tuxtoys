@@ -6,8 +6,9 @@ keys of the user's already, and takes them back only when the user switches it, 
 shortcut, off; not at the end of a session.
 
 The frame around a pinned window is drawn by a helper of its own (tuxtoys.alwaysontop),
-since the daemon has no GTK: started while Always on Top is on and its border is wanted,
-restarted when the frame's settings change, stopped when it goes off.
+since the daemon has no GTK: started while Always on Top is on, restarted when the frame's
+settings change, stopped when it goes off. Without a border it draws nothing, but it still
+lets go of excluded applications' windows and gives a window let go of its opacity back.
 
 Interface io.github.konabe_studio.TuxToys.AlwaysOnTop at
 /io/github/konabe_studio/TuxToys/modules/alwaysontop:
@@ -110,6 +111,8 @@ def helper_command(options: Options, package_root: Path = PACKAGE_ROOT) -> list[
         arguments += ["--color", options.border_color]
     if options.sound:
         arguments.append("--sound")
+    if not options.border:
+        arguments.append("--no-border")
     for app in options.excluded_apps:
         arguments += ["--exclude", app]
     installed = LIBEXEC / HELPER
@@ -263,8 +266,6 @@ class AlwaysOnTop(Module):
 
     def _run_helper(self) -> None:
         self._stop_helper()
-        if not self._options.border:
-            return
         try:
             self._helper = self._start(helper_command(self._options))
         except OSError:

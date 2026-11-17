@@ -125,12 +125,13 @@ class Sounds:
 
 class Borders:
     """One frame for each pinned window, made, moved and taken away as they change, with a
-    sound on pinning and letting go when wanted.
+    sound on pinning and letting go when wanted. Without `frames`, only the sounds.
     """
 
-    def __init__(self, style: Style, sounds: Sounds | None = None) -> None:
+    def __init__(self, style: Style, sounds: Sounds | None = None, frames: bool = True) -> None:
         self._style = style
         self._sounds = sounds
+        self._draw = frames
         self._frames: dict[int, Border] = {}
         self._known: set[int] | None = None
 
@@ -142,6 +143,8 @@ class Borders:
             if open_ids is not None and let_go & open_ids:
                 self._sounds.play("unpin")
         self._known = set(windows)
+        if not self._draw:
+            return
         for xid in list(self._frames):
             if xid not in windows:
                 self._frames.pop(xid).destroy()
