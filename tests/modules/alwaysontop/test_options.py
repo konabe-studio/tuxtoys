@@ -1,6 +1,14 @@
 import pytest
 
-from tuxtoys.modules.alwaysontop.frame import OPAQUE, Rect, around, hex_to_rgb, step_opacity
+from tuxtoys.modules.alwaysontop.frame import (
+    OPAQUE,
+    Rect,
+    around,
+    hex_to_rgb,
+    opacity_record,
+    recorded_opacity,
+    step_opacity,
+)
 from tuxtoys.modules.alwaysontop.options import Options
 
 DEFAULTS = {
@@ -68,3 +76,10 @@ def test_opacity_stops_at_the_ends() -> None:
 
 def test_opacity_steps_back_up_to_opaque() -> None:
     assert step_opacity(round(0.9 * OPAQUE), up=True) == OPAQUE
+
+
+def test_the_opacity_before_is_written_down_and_read_back() -> None:
+    assert recorded_opacity(opacity_record(None)) is None
+    assert recorded_opacity(opacity_record(round(0.7 * OPAQUE))) == round(0.7 * OPAQUE)
+    assert recorded_opacity(opacity_record(0)) == 0  # clear, not none
+    assert recorded_opacity([]) is None

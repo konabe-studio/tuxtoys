@@ -33,6 +33,15 @@ def test_a_frame_for_each_pinned_window_and_none_for_the_rest() -> None:
     assert borders._frames == {}
 
 
+def test_without_frames_only_the_sounds() -> None:
+    heard = Heard()
+    borders = Borders(Style((1.0, 0.5, 0.0), 4, 100, 8), heard, frames=False)
+    borders.show({}, {1})
+    borders.show({1: Rect(100, 100, 400, 300)}, {1})
+    assert borders._frames == {}
+    assert heard.events == ["pin"]
+
+
 def test_parse_color() -> None:
     assert parse_color("#ff0000") == (1.0, 0.0, 0.0)
     assert parse_color("") is None

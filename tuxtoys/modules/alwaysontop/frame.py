@@ -1,5 +1,6 @@
 """Where the frame around a pinned window goes, and the opacity steps. Free of GTK."""
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 # X11's _NET_WM_WINDOW_OPACITY: 0 is clear, this is opaque.
@@ -31,6 +32,23 @@ def hex_to_rgb(color: str) -> tuple[float, float, float]:
     value = color.lstrip("#")
     red, green, blue = (int(value[i : i + 2], 16) / 255 for i in (0, 2, 4))
     return red, green, blue
+
+
+# The opacity a window had before the opacity shortcuts first changed it, kept on the
+# window itself (see platform.x11) so that letting it go puts it back, as PowerToys does:
+# [1, its _NET_WM_WINDOW_OPACITY], or [0, 0] when it had none.
+BEFORE_PROPERTY = "_TUXTOYS_OPACITY_BEFORE"
+
+
+def opacity_record(current: int | None) -> list[int]:
+    return [0, 0] if current is None else [1, current]
+
+
+def recorded_opacity(record: Sequence[int]) -> int | None:
+    """The opacity to put back from a record: None for none at all, as the window had."""
+    if len(record) < 2 or not record[0]:
+        return None
+    return record[1]
 
 
 def step_opacity(current: int | None, up: bool) -> int:

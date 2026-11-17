@@ -1,5 +1,7 @@
-"""The frame helper: draws a frame around every window Muffin keeps above the others, until
-the daemon stops it. Started by the Always on Top module, not by hand.
+"""The frame helper: follows the windows Muffin keeps above the others while Always on Top is
+on, until the daemon stops it, and draws a frame around each unless --no-border. It also lets
+go of excluded applications' windows, and gives a window let go of the opacity it had.
+Started by the Always on Top module, not by hand.
 """
 
 import argparse
@@ -20,6 +22,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--color", default="")
     parser.add_argument("--sound", action="store_true")
     parser.add_argument("--exclude", action="append", default=[])
+    parser.add_argument("--no-border", dest="border", action="store_false")
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(name)s: %(levelname)s: %(message)s")
     try:
@@ -38,11 +41,11 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     style = Style(parse_color(args.color) or theme_accent(), args.width, args.opacity, args.radius)
-    borders = Borders(style, Sounds() if args.sound else None)
+    borders = Borders(style, Sounds() if args.sound else None, frames=args.border)
     windows = AboveWindows(borders.show, args.exclude)
     for number in (signal.SIGTERM, signal.SIGINT):
         GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, number, Gtk.main_quit)
-    log.info("framing windows kept above")
+    log.info("following windows kept above%s", "" if args.border else ", without frames")
     Gtk.main()
-    del windows
+    windows.let_go()
     return 0

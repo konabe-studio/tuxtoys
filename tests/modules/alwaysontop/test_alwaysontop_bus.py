@@ -149,9 +149,11 @@ def test_the_shortcut_setting(harness: Harness) -> None:
     assert harness.keys.wm["toggle-above"] == [KEYS]
 
 
-def test_no_border_no_helper(harness: Harness) -> None:
+def test_no_border_still_a_helper_without_frames(harness: Harness) -> None:
+    # It lets go of excluded apps' windows, and gives a window let go of its opacity back.
     harness.enable({"border": False})
-    assert harness.started == []
+    (helper,) = harness.running()
+    assert helper.command[-1] == "--no-border"
 
 
 def test_a_new_frame_restarts_the_helper(harness: Harness) -> None:

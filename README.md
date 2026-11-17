@@ -90,6 +90,7 @@ Keeps a window above all the others, with Muffin's own Super+Ctrl+T.
 - **A frame** around every pinned window, in your theme's accent color or a color of your
   own, with its width, opacity and rounded corners to set.
 - **Opacity:** Super+Ctrl+Page Up and Page Down make a pinned window more or less opaque.
+  Letting it go gives it back the opacity it had.
 - **A sound** on pinning and letting go, if you want one, and **applications to leave
   out**, which are never kept on top.
 
