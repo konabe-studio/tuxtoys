@@ -6,6 +6,8 @@
 APP_ID = "io.github.konabe_studio.TuxToys"
 BUS_NAME = APP_ID
 OBJECT_PATH = "/io/github/konabe_studio/TuxToys"
+# Where the project lives, for the links in the settings window and the panel icon's menu.
+PROJECT_URL = "https://github.com/konabe-studio/tuxtoys"
 
 # The version, as pyproject.toml has it; debian/changelog says the same in Debian's way
 # (0.5.0~dev for 0.5.0.dev0). tests/test_version.py keeps the three in step.

@@ -1,8 +1,11 @@
-"""The panel icon itself: an XApp.StatusIcon, Linux Mint's own, with a GTK menu.
+"""The panel icons: XApp.StatusIcons, Linux Mint's own, with GTK menus.
 
-A left click toggles Awake. The right-click menu starts a mode, sets whether the screen
-stays on, and turns Awake off. The icon follows the daemon: it hears StateChanged, and
-notices the daemon leaving and coming back.
+Two, as PowerToys has. TuxToys' penguin is always there: a click on it opens Quick Access,
+the tools that are on and have something to open, with the settings, the documentation
+and a bug report. Awake's coffee cup sits beside it while Awake is switched on: a left
+click toggles Awake, and its right-click menu starts a mode, sets whether the screen stays
+on, and turns Awake off. Both follow the daemon: they hear StateChanged and
+ModulesChanged, and notice the daemon leaving and coming back.
 """
 
 import sys
@@ -18,21 +21,32 @@ gi.require_version("XApp", "1.0")
 
 from gi.repository import Gio, GLib, Gtk, XApp  # noqa: E402
 
-from tuxtoys import APP_ID, BUS_NAME  # noqa: E402
-from tuxtoys.api import AWAKE_INTERFACE, AWAKE_PATH, ModuleOff, NotRunning, Refused  # noqa: E402
+from tuxtoys import APP_ID, BUS_NAME, OBJECT_PATH  # noqa: E402
+from tuxtoys.api import (  # noqa: E402
+    AWAKE_INTERFACE,
+    AWAKE_PATH,
+    DAEMON_INTERFACE,
+    ModuleInfo,
+    ModuleOff,
+    NotRunning,
+    Refused,
+)
 from tuxtoys.core import clock  # noqa: E402
 from tuxtoys.core.i18n import _  # noqa: E402
-from tuxtoys.tray import view  # noqa: E402
+from tuxtoys.core.nemo_action import PACKAGE_ROOT  # noqa: E402
+from tuxtoys.tray import quick, view  # noqa: E402
 
 # The checkout this runs from, before TuxToys is installed, and its icons.
 CHECKOUT = Path(__file__).parents[2]
 CHECKOUT_ICONS = CHECKOUT / "data" / "icons" / "hicolor" / "symbolic" / "apps"
+MAIN_ICON = f"{APP_ID}-symbolic"
 _hinted = False
 
 
 class Client(Protocol):
     """What the icon needs from tuxtoys.client.Client, which is the real one."""
 
+    def modules(self) -> list[ModuleInfo]: ...
     def awake_state(self) -> dict: ...
     def awake_start(self, mode: str, minutes: int, until: str, keep_screen: bool) -> None: ...
     def awake_stop(self) -> None: ...
@@ -77,15 +91,33 @@ class Tray:
         bus: Gio.DBusConnection,
         client: Client,
         now: Callable[[], datetime] = clock.now,
+        spawn: Callable[[list[str]], None] | None = None,
+        package_root: Path = PACKAGE_ROOT,
     ) -> None:
+        """The tests hand in a client, a clock and what starts a program."""
         self._client = client
         self._now = now
+        self._spawn = spawn or self._start_program
+        self._package_root = package_root
         self._state: dict | None = None
         self._problem = _("TuxToys is not running.")
+        self._modules: list[ModuleInfo] | None = None
         self._refresh = 0
 
+        # TuxToys' own icon, always there, with Quick Access on either click.
+        self.main_icon = XApp.StatusIcon()
+        self.main_icon.set_name("tuxtoys")
+        self.main_icon.set_icon_name(icon(MAIN_ICON))
+        self.main_icon.set_tooltip_text("TuxToys")
+        self.quick_menu = Gtk.Menu()
+        self.main_icon.set_primary_menu(self.quick_menu)
+        self.main_icon.set_secondary_menu(self.quick_menu)
+        # The menu's items by their labels, for the tests: an item with an icon has none.
+        self.quick_items: dict[str, Gtk.MenuItem] = {}
+
+        # Awake's coffee cup, shown while Awake is switched on.
         self.status_icon = XApp.StatusIcon()
-        self.status_icon.set_name("tuxtoys")
+        self.status_icon.set_name("tuxtoys-awake")
         self.status_icon.connect("activate", self._on_activate)
         self.menu = self._build_menu()
         self.status_icon.set_secondary_menu(self.menu)
@@ -99,11 +131,22 @@ class Tray:
             Gio.DBusSignalFlags.NONE,
             self._on_state_changed,
         )
+        # A tool switched on or off: Quick Access follows, and the cup comes or goes.
+        bus.signal_subscribe(
+            BUS_NAME,
+            DAEMON_INTERFACE,
+            "ModulesChanged",
+            OBJECT_PATH,
+            None,
+            Gio.DBusSignalFlags.NONE,
+            self._on_modules_changed,
+        )
         # AUTO_START: once installed, D-Bus starts the daemon if it is not running yet.
         self._watch = Gio.bus_watch_name_on_connection(
             bus, BUS_NAME, Gio.BusNameWatcherFlags.AUTO_START, self._on_appeared, self._on_vanished
         )
         self._render()
+        self.show_modules(None)
 
     def update(self, state: dict | None, problem: str = "") -> None:
         """Shows `state`, or `problem` when there is none."""
@@ -119,6 +162,9 @@ class Tray:
         self.tooltip = shown.status
         self.status_icon.set_icon_name(self.icon_name)
         self.status_icon.set_tooltip_text(self.tooltip)
+        # No state: the daemon is not there, or Awake is switched off in it.
+        self.awake_shown = self._state is not None
+        self.status_icon.set_visible(self.awake_shown)
         self._status.set_label(shown.status)
         for item in self._actions:
             item.set_sensitive(shown.available)
@@ -179,6 +225,67 @@ class Tray:
         menu.show_all()
         return menu
 
+    def show_modules(self, modules: list[ModuleInfo] | None) -> None:
+        """Fills Quick Access from `modules` as ListModules reports them, or says the daemon
+        is not running when there are none.
+        """
+        self._modules = modules
+        for child in self.quick_menu.get_children():
+            self.quick_menu.remove(child)
+        self.quick_items = {}
+
+        def add(label: str, action: Callable[[], None] | None, icon_name: str = "") -> None:
+            item = Gtk.MenuItem()
+            if icon_name:
+                box = Gtk.Box(spacing=8)
+                image = Gtk.Image.new_from_icon_name(icon_name, Gtk.IconSize.MENU)
+                box.pack_start(image, False, False, 0)
+                box.pack_start(Gtk.Label(label=label, xalign=0), True, True, 0)
+                item.add(box)
+            else:
+                item.set_label(label)
+            if action is None:
+                item.set_sensitive(False)
+            else:
+                item.connect("activate", lambda _item: action())
+            self.quick_menu.append(item)
+            self.quick_items[label] = item
+
+        if modules is None:
+            add(_("TuxToys is not running."), None)
+        else:
+            shown = quick.entries(modules)
+            for entry in shown:
+                add(entry.name, lambda entry=entry: self._open_tool(entry), entry.icon)
+            if not shown:
+                add(_("Switch on a tool to open it from here."), None)
+        self.quick_menu.append(Gtk.SeparatorMenuItem())
+        add(_("Settings…"), self._open_settings)
+        add(_("Documentation"), lambda: self._open_uri(quick.DOCUMENTATION))
+        add(_("Report a bug"), lambda: self._open_uri(quick.REPORT_A_BUG))
+        self.quick_menu.show_all()
+
+    def _open_tool(self, entry: quick.Entry) -> None:
+        try:
+            self._spawn(quick.argv(entry.command, self._package_root))
+        except GLib.Error as error:
+            self._error(
+                _("{tool} did not open: {error}").format(tool=entry.name, error=error.message)
+            )
+
+    def _start_program(self, argv: list[str]) -> None:
+        """Starts `argv`, from the checkout's folder when TuxToys runs from one."""
+        launcher = Gio.SubprocessLauncher.new(Gio.SubprocessFlags.NONE)
+        if self._package_root != quick.INSTALLED_ROOT:
+            launcher.set_cwd(str(self._package_root))
+        launcher.spawnv(argv)
+
+    def _open_uri(self, uri: str) -> None:
+        try:
+            Gio.AppInfo.launch_default_for_uri(uri, None)
+        except GLib.Error as error:
+            self._error(error.message)
+
     def _open_settings(self) -> None:
         """Opens the settings window: the installed one, or from the checkout before then."""
         installed = Gio.DesktopAppInfo.new(f"{APP_ID}.desktop")
@@ -220,6 +327,20 @@ class Tray:
 
     def _on_appeared(self, connection: Gio.DBusConnection, name: str, owner: str) -> None:
         try:
+            self.show_modules(self._client.modules())
+        except NotRunning:
+            self.show_modules(None)
+        self._read_awake()
+
+    def _on_modules_changed(self, *arguments: object) -> None:
+        parameters = arguments[5]
+        assert isinstance(parameters, GLib.Variant)
+        (rows,) = parameters.unpack()
+        self.show_modules([ModuleInfo(*row) for row in rows])
+        self._read_awake()
+
+    def _read_awake(self) -> None:
+        try:
             self.update(self._client.awake_state())
         except NotRunning:
             self.update(None, _("TuxToys is not running."))
@@ -228,6 +349,7 @@ class Tray:
 
     def _on_vanished(self, connection: Gio.DBusConnection, name: str) -> None:
         self.update(None, _("TuxToys is not running."))
+        self.show_modules(None)
 
     def _on_refresh(self) -> bool:
         self._refresh = 0

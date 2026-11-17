@@ -30,8 +30,9 @@ without touching your power settings.
   or **until a time of day**, even one past midnight.
 - **Keep the screen on, or not.** With the screen allowed to turn off, Awake only stops the
   computer from sleeping.
-- **From the panel.** One click turns it on or off, the icon shows the mode, the tooltip
-  shows the time left, and a notification tells you when a timer runs out.
+- **From the panel.** While Awake is switched on, its coffee cup sits in the panel: one
+  click turns it on or off, the icon shows the mode, the tooltip shows the time left,
+  and a notification tells you when a timer runs out.
 - **Nothing left behind.** Awake starts off after every login, and if TuxToys stops for
   any reason, your usual power settings apply again within seconds.
 
@@ -252,6 +253,11 @@ Choose files or folders in Nemo, right-click them and choose **Rename with Renam
 - **Nemo's Rename (F2)** on several items can open Rename+ instead of Bulky, if you switch
   it on.
 
+TuxToys' penguin sits in the panel. A click on it opens **Quick Access**: the tools you
+have switched on that open something, such as Color Picker or Hosts File Editor, with
+the settings, the documentation and a bug report a click away. The General page of the
+settings can hide it.
+
 Every tool except Awake starts switched off, so nothing on your desktop changes until you
 pick it. Everything planned next, grouped into milestones, is in the
 [roadmap](ROADMAP.md).
@@ -266,8 +272,8 @@ double-click it, or install it from a terminal in the folder you downloaded it t
 sudo apt install ./tuxtoys_*_all.deb
 ```
 
-Then log out and back in. The coffee cup appears in the panel, and TuxToys is in the
-menu.
+Then log out and back in. TuxToys' penguin appears in the panel, with Awake's coffee
+cup beside it, and TuxToys is in the menu.
 
 To remove TuxToys:
 
