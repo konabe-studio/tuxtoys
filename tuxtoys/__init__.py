@@ -10,5 +10,5 @@ OBJECT_PATH = "/io/github/konabe_studio/TuxToys"
 PROJECT_URL = "https://github.com/konabe-studio/tuxtoys"
 
 # The version, as pyproject.toml has it; debian/changelog says the same in Debian's way
-# (0.5.0~dev for 0.5.0.dev0). tests/test_version.py keeps the three in step.
-VERSION = "0.5.0"
+# (0.6.0~dev for 0.6.0.dev0). tests/test_version.py keeps the three in step.
+VERSION = "0.6.0.dev0"
