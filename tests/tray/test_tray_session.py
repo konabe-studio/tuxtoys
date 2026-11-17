@@ -233,6 +233,21 @@ def test_quick_access_with_nothing_to_open_says_how_to_get_something(harness: Ha
 
 
 def test_follows_tools_switched_on_and_off(harness: Harness, pump: Callable[..., bool]) -> None:
+    # The tray hears only signals from the daemon's name, so the test's side takes it.
+    harness.service.call_sync(
+        "org.freedesktop.DBus",
+        "/org/freedesktop/DBus",
+        "org.freedesktop.DBus",
+        "RequestName",
+        GLib.Variant("(su)", (BUS_NAME, 4)),
+        GLib.VariantType("(u)"),
+        Gio.DBusCallFlags.NONE,
+        -1,
+        None,
+    )
+    assert pump(lambda: "Switch on a tool to open it from here." in harness.tray.quick_items)
+    assert harness.tray.awake_shown
+
     harness.client.state = None  # Awake switched off
     rows = [tuple(module("mousejump")), tuple(module("awake", "off"))]
     harness.service.emit_signal(
