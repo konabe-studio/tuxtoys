@@ -99,7 +99,10 @@ def test_a_second_daemon_exits_and_leaves_the_first_alone(
     assert soon(lambda: owned(bus)), "the daemon never took its bus name"
     second = start()
     assert second.wait(timeout=5) == 1
-    assert "already running" in second.communicate()[1]
+    log = second.communicate()[1]
+    assert "already running" in log
+    # It looked before it started anything: no module of its own came on, not even Awake.
+    assert "is on" not in log
     assert first.poll() is None
     assert owned(bus)
 

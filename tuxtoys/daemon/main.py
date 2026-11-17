@@ -7,8 +7,11 @@ before the process ends.
 The objects go on the bus, and the modules on, as soon as the connection is up and before
 the name is asked for. When D-Bus starts the daemon for a waiting call, it hands that call
 over the moment the name is taken; an object put up only then could miss it, and the
-caller would hear that it does not exist. A second daemon therefore switches its modules
-on for the moment it takes to find the name taken, which a module's enable() has to allow.
+caller would hear that it does not exist. So before it starts anything, a daemon asks
+the bus whether the name already has an owner, and exits at once if it does, with no
+module switched on and the name never asked for. Only two daemons started at the very
+same moment can both get that far; the one that loses the name then switches its
+modules on for a moment, which a module's enable() has to allow.
 """
 
 import logging
@@ -27,20 +30,22 @@ log = logging.getLogger("tuxtoysd")
 
 def main() -> int:
     logging.basicConfig(level=logging.INFO, format="tuxtoysd: %(levelname)s: %(message)s")
+    try:
+        connection = Gio.bus_get_sync(Gio.BusType.SESSION)
+    except GLib.Error as error:
+        log.error("cannot reach the session bus: %s", error.message)
+        return 1
+    # Looked at before anything starts, and before the name is asked for: a daemon that
+    # finds TuxToys running leaves without switching a module on or touching the name.
+    if has_owner(connection, BUS_NAME):
+        log.error("%s is taken: TuxToys is already running in this session", BUS_NAME)
+        return 1
+
     loop = GLib.MainLoop()
     loaders = {module_id: lazy(spec) for module_id, spec in AVAILABLE.items()}
     service = DaemonService(loaders, config.default_path())
     owned = False
     status = 0
-
-    def on_bus_acquired(connection: Gio.DBusConnection, name: str) -> None:
-        nonlocal status
-        try:
-            service.start(connection)
-        except Exception:
-            log.exception("could not start the modules")
-            status = 1
-            loop.quit()
 
     def on_name_acquired(connection: Gio.DBusConnection, name: str) -> None:
         nonlocal owned
@@ -65,11 +70,16 @@ def main() -> int:
     for signal_number in (signal.SIGTERM, signal.SIGINT):
         GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal_number, on_signal)
 
-    owner = Gio.bus_own_name(
-        Gio.BusType.SESSION,
+    try:
+        service.start(connection)
+    except Exception:
+        log.exception("could not start the modules")
+        service.stop()
+        return 1
+    owner = Gio.bus_own_name_on_connection(
+        connection,
         BUS_NAME,
         Gio.BusNameOwnerFlags.DO_NOT_QUEUE,
-        on_bus_acquired,
         on_name_acquired,
         on_name_lost,
     )
@@ -80,3 +90,22 @@ def main() -> int:
         Gio.bus_unown_name(owner)
     log.info("stopped")
     return status
+
+
+def has_owner(connection: Gio.DBusConnection, name: str) -> bool:
+    """Whether `name` is owned on the bus already; False if the bus will not say."""
+    try:
+        (answer,) = connection.call_sync(
+            "org.freedesktop.DBus",
+            "/org/freedesktop/DBus",
+            "org.freedesktop.DBus",
+            "NameHasOwner",
+            GLib.Variant("(s)", (name,)),
+            GLib.VariantType("(b)"),
+            Gio.DBusCallFlags.NONE,
+            -1,
+            None,
+        ).unpack()
+    except GLib.Error:
+        return False
+    return bool(answer)
