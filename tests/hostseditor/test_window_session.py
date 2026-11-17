@@ -221,3 +221,19 @@ def test_loopback_setting(hosts: Path) -> None:
     hosts.write_text("127.0.0.1 a\n127.0.1.1 a\n")
     window.reload()
     assert [row.doubled for row in window.rows()] == [True, True]
+
+
+def test_the_columns_line_up(hosts: Path) -> None:
+    # Hosts and comments of every length, and a ping's answer in one row only: each row
+    # is a box of its own, so this once moved the comments about from row to row.
+    window = open_window(hosts)
+    window.ping(window.rows()[0])
+    window.set_default_size(820, 560)
+    window.show_all()
+    while Gtk.events_pending():
+        Gtk.main_iteration()
+    rows = window.rows()
+    for column in ("address", "hosts", "comment", "switch"):
+        places = {getattr(row, column).get_allocation().x for row in rows}
+        assert len(places) == 1, (column, places)
+    window.destroy()
