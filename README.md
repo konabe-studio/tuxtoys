@@ -15,9 +15,8 @@ so it follows your theme and behaves like the rest of the system. Where Cinnamon
 does something well, TuxToys leaves it alone, and each tool says what it adds over the
 built-in one.
 
-> **Status: early development.** Release 0.2.0 carries five tools: Awake, and the first
-> milestone's Light Switch, Always on Top, File Locksmith and New+. Up to that release
-> TuxToys was called MintToys; the next release is the first under the new name.
+> **Status: early development.** Release 0.5.0 carries nineteen tools, from Awake to the
+> mouse tools of the fourth milestone. Up to 0.2.0, TuxToys was called MintToys.
 
 ## The tools
 
