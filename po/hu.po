@@ -2128,7 +2128,7 @@ msgstr "Adatvédelem"
 msgid "TuxToys settings"
 msgstr "TuxToys-beállítások"
 
-#: tuxtoys/settings/general_page.py
+#: tuxtoys/settings/general_page.py tuxtoys/tray/app.py
 msgid "Documentation"
 msgstr "Dokumentáció"
 
@@ -2136,7 +2136,7 @@ msgstr "Dokumentáció"
 msgid "GitHub repository"
 msgstr "GitHub-adattár"
 
-#: tuxtoys/settings/general_page.py
+#: tuxtoys/settings/general_page.py tuxtoys/tray/app.py
 msgid "Report a bug"
 msgstr "Hiba jelentése"
 
@@ -4273,3 +4273,12 @@ msgstr "Inaktivitási késleltetés (másodperc)"
 #: tuxtoys/settings/mouseutilities_page.py
 msgid "Choose a delay from 1 to 60 seconds."
 msgstr "Válasszon 1 és 60 másodperc közötti késleltetést."
+
+#: tuxtoys/tray/app.py
+msgid "Switch on a tool to open it from here."
+msgstr "Kapcsoljon be egy eszközt, hogy innen megnyithassa."
+
+#: tuxtoys/tray/app.py
+#, python-brace-format
+msgid "{tool} did not open: {error}"
+msgstr "A(z) {tool} eszköz nem nyílt meg: {error}"

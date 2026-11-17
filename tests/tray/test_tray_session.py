@@ -21,8 +21,14 @@ from gi.repository import Gio, GLib, Gtk  # noqa: E402
 if not Gtk.init_check()[0]:
     pytest.skip("no display to open", allow_module_level=True)
 
-from tuxtoys import BUS_NAME  # noqa: E402
-from tuxtoys.api import AWAKE_INTERFACE, AWAKE_PATH  # noqa: E402
+from tuxtoys import BUS_NAME, OBJECT_PATH  # noqa: E402
+from tuxtoys.api import (  # noqa: E402
+    AWAKE_INTERFACE,
+    AWAKE_PATH,
+    DAEMON_INTERFACE,
+    ModuleInfo,
+    ModuleOff,
+)
 from tuxtoys.tray import app, view  # noqa: E402
 
 NOW = datetime(2026, 6, 1, 10, 0, tzinfo=ZoneInfo("Europe/Budapest"))
@@ -34,9 +40,15 @@ SIGNATURES = {"mode": "s", "keep_screen": "b", "ends_at": "x"}
 class FakeClient:
     def __init__(self) -> None:
         self.calls: list[tuple] = []
-        self.state = OFF
+        self.state: dict | None = OFF
+        self.module_list: list[ModuleInfo] = []
+
+    def modules(self) -> list[ModuleInfo]:
+        return self.module_list
 
     def awake_state(self) -> dict:
+        if self.state is None:
+            raise ModuleOff
         return self.state
 
     def awake_start(self, mode: str, minutes: int, until: str, keep_screen: bool) -> None:
@@ -52,11 +64,22 @@ class FakeClient:
         self.calls.append(("keep_screen", keep_screen))
 
 
+def module(module_id: str, state: str = "on") -> ModuleInfo:
+    return ModuleInfo(module_id, module_id, "", state, "")
+
+
 class Harness:
-    def __init__(self, tray: app.Tray, client: FakeClient, service: Gio.DBusConnection) -> None:
+    def __init__(
+        self,
+        tray: app.Tray,
+        client: FakeClient,
+        service: Gio.DBusConnection,
+        spawned: list[list[str]],
+    ) -> None:
         self.tray = tray
         self.client = client
         self.service = service
+        self.spawned = spawned
 
     def item(self, label: str) -> Gtk.MenuItem:
         for child in self.tray.menu.get_children():
@@ -74,12 +97,20 @@ def harness(
 ) -> Iterator[Harness]:
     service, client_bus = private_bus
     client = FakeClient()
-    tray = app.Tray(client_bus, client, now=lambda: NOW)
+    spawned: list[list[str]] = []
+    tray = app.Tray(
+        client_bus,
+        client,
+        now=lambda: NOW,
+        spawn=spawned.append,
+        package_root=Path("/usr/lib/tuxtoys"),
+    )
     # The name watcher reports, once, that nobody owns the daemon's name yet.
     pump(lambda: False, seconds=0.2)
-    yield Harness(tray, client, service)
+    yield Harness(tray, client, service, spawned)
     # Run on a desktop, the test icons would otherwise stay in the panel until pytest ends.
     tray.status_icon.set_visible(False)
+    tray.main_icon.set_visible(False)
 
 
 def test_without_the_daemon_it_says_so_and_offers_nothing(harness: Harness) -> None:
@@ -167,3 +198,45 @@ def test_an_icon_not_installed_reaches_the_panel_as_a_file_it_can_load(name: str
 
 def test_settings_is_on_the_menu_even_without_the_daemon(harness: Harness) -> None:
     assert harness.item("Settings…").get_sensitive()
+
+
+def test_without_the_daemon_the_cup_is_hidden_and_quick_access_says_so(
+    harness: Harness,
+) -> None:
+    assert not harness.tray.awake_shown
+    assert not harness.tray.quick_items["TuxToys is not running."].get_sensitive()
+    assert harness.tray.quick_items["Settings…"].get_sensitive()
+    assert harness.tray.quick_items["Report a bug"].get_sensitive()
+
+
+def test_the_cup_shows_only_while_awake_is_on(harness: Harness) -> None:
+    harness.tray.update(OFF)
+    assert harness.tray.awake_shown
+    harness.tray.update(None, "Awake is switched off in TuxToys.")
+    assert not harness.tray.awake_shown
+
+
+def test_quick_access_lists_the_tools_on_and_opens_them(harness: Harness) -> None:
+    harness.tray.show_modules(
+        [module("awake"), module("mousejump"), module("colorpicker"), module("hosts", "off")]
+    )
+    items = list(harness.tray.quick_items)
+    assert items == ["Color Picker", "Mouse Jump", "Settings…", "Documentation", "Report a bug"]
+    harness.tray.quick_items["Color Picker"].activate()
+    assert harness.spawned == [["/usr/bin/tuxtoys", "colorpicker"]]
+
+
+def test_quick_access_with_nothing_to_open_says_how_to_get_something(harness: Harness) -> None:
+    harness.tray.show_modules([module("awake"), module("colorpicker", "off")])
+    item = harness.tray.quick_items["Switch on a tool to open it from here."]
+    assert not item.get_sensitive()
+
+
+def test_follows_tools_switched_on_and_off(harness: Harness, pump: Callable[..., bool]) -> None:
+    harness.client.state = None  # Awake switched off
+    rows = [tuple(module("mousejump")), tuple(module("awake", "off"))]
+    harness.service.emit_signal(
+        None, OBJECT_PATH, DAEMON_INTERFACE, "ModulesChanged", GLib.Variant("(a(sssss))", (rows,))
+    )
+    assert pump(lambda: "Mouse Jump" in harness.tray.quick_items)
+    assert not harness.tray.awake_shown

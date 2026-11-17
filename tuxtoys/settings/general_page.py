@@ -22,14 +22,14 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gio, GLib, Gtk  # noqa: E402
 from xapp.SettingsWidgets import Button, SettingsPage, SettingsWidget, Switch, Text  # noqa: E402
 
-from tuxtoys import APP_ID, VERSION  # noqa: E402
+from tuxtoys import APP_ID, PROJECT_URL, VERSION  # noqa: E402
 from tuxtoys.api import ModuleOff, NotRunning, Refused  # noqa: E402
 from tuxtoys.core.i18n import _  # noqa: E402
 from tuxtoys.core.nemo_action import PACKAGE_ROOT, program  # noqa: E402
 from tuxtoys.settings import backup, startup  # noqa: E402
 from tuxtoys.settings.lightswitch_page import Client  # noqa: E402
 
-PROJECT = "https://github.com/konabe-studio/tuxtoys"
+PROJECT = PROJECT_URL
 TRAY_NAME = f"{APP_ID}.Tray"
 
 

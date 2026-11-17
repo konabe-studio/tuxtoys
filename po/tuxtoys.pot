@@ -2021,7 +2021,7 @@ msgstr ""
 msgid "TuxToys settings"
 msgstr ""
 
-#: tuxtoys/settings/general_page.py
+#: tuxtoys/settings/general_page.py tuxtoys/tray/app.py
 msgid "Documentation"
 msgstr ""
 
@@ -2029,7 +2029,7 @@ msgstr ""
 msgid "GitHub repository"
 msgstr ""
 
-#: tuxtoys/settings/general_page.py
+#: tuxtoys/settings/general_page.py tuxtoys/tray/app.py
 msgid "Report a bug"
 msgstr ""
 
@@ -4108,4 +4108,13 @@ msgstr ""
 
 #: tuxtoys/settings/mouseutilities_page.py
 msgid "Choose a delay from 1 to 60 seconds."
+msgstr ""
+
+#: tuxtoys/tray/app.py
+msgid "Switch on a tool to open it from here."
+msgstr ""
+
+#: tuxtoys/tray/app.py
+#, python-brace-format
+msgid "{tool} did not open: {error}"
 msgstr ""
